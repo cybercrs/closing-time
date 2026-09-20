@@ -68,14 +68,14 @@ COMPANY_NAME = "Gem City Creative Studio"
 REPORTING_DATE = "May 31"
 
 CLASSIFICATION_OPTIONS = (
-    "Prepaid expense (deferral)",
-    "Unearned revenue (deferral)",
+    "Deferred expense",
+    "Deferred revenue",
     "Accrued revenue",
     "Accrued expense",
 )
 
 INTEGRITY_OPTIONS = (
-    "Acceptable if it is faithfully reported",
+    "Acceptable because it is faithfully reported",
     "Not acceptable because it misstates May",
 )
 
@@ -177,7 +177,7 @@ ADJUSTMENT_ITEMS = (
             "The $12,000 policy began May 1 and covers twelve months. The records "
             "still show the full $12,000 as Prepaid Insurance."
         ),
-        classification="Prepaid expense (deferral)",
+        classification="Deferred expense",
         amount=1_000,
         changes=(("Prepaid Insurance", -1_000), ("Insurance Expense", 1_000)),
         explanation=(
@@ -193,7 +193,7 @@ ADJUSTMENT_ITEMS = (
             "The Supplies account shows $2,400. A May 31 count finds only $700 of "
             "supplies remaining."
         ),
-        classification="Prepaid expense (deferral)",
+        classification="Deferred expense",
         amount=1_700,
         changes=(("Supplies", -1_700), ("Supplies Expense", 1_700)),
         explanation=(
@@ -210,7 +210,7 @@ ADJUSTMENT_ITEMS = (
             "completed by May 31, but the records still show all $9,000 as "
             "Unearned Revenue."
         ),
-        classification="Unearned revenue (deferral)",
+        classification="Deferred revenue",
         amount=6_000,
         changes=(("Unearned Revenue", -6_000), ("Service Revenue", 6_000)),
         explanation=(
@@ -461,7 +461,7 @@ INTEGRITY_SCENARIOS = (
             "and clearly describing that it will not recur."
         ),
         options=INTEGRITY_OPTIONS,
-        correct="Acceptable if it is faithfully reported",
+        correct="Acceptable because it is faithfully reported",
         explanation=(
             "A one-time item is not automatically improper. If the sale occurred, "
             "the amount is measured correctly, and its nature is transparent, May "

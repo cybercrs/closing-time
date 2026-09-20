@@ -20,7 +20,7 @@ from closing_time.case_data import (
 
 
 SNAPSHOT_PARAM = "progress"
-SNAPSHOT_VERSION = 3
+SNAPSHOT_VERSION = 4
 MAX_TOKEN_LENGTH = 16_000
 MAX_JSON_BYTES = 32_000
 

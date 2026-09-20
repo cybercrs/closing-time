@@ -4,7 +4,9 @@ import unittest
 from closing_time.case_data import (
     ACCOUNT_CHALLENGES,
     ADJUSTMENT_ITEMS,
+    CLASSIFICATION_OPTIONS,
     INTEGRITY_SCENARIOS,
+    INTEGRITY_OPTIONS,
     RECOGNITION_QUESTIONS,
     STATEMENT_QUESTIONS,
     UNADJUSTED_BALANCES,
@@ -61,10 +63,17 @@ class ClosingCalculationTests(unittest.TestCase):
 
     def test_case_covers_all_four_adjustment_classes(self):
         classes = [item.classification for item in ADJUSTMENT_ITEMS]
-        self.assertEqual(classes.count("Prepaid expense (deferral)"), 2)
-        self.assertEqual(classes.count("Unearned revenue (deferral)"), 1)
+        self.assertEqual(classes.count("Deferred expense"), 2)
+        self.assertEqual(classes.count("Deferred revenue"), 1)
         self.assertEqual(classes.count("Accrued revenue"), 1)
         self.assertEqual(classes.count("Accrued expense"), 2)
+        self.assertFalse(
+            any("prepaid" in option.lower() or "unearned" in option.lower() for option in CLASSIFICATION_OPTIONS)
+        )
+
+    def test_acceptable_integrity_choice_explains_why(self):
+        self.assertIn("Acceptable because it is faithfully reported", INTEGRITY_OPTIONS)
+        self.assertFalse(any(option.startswith("Acceptable if") for option in INTEGRITY_OPTIONS))
 
     def test_interest_evidence_identifies_the_studio_as_borrower(self):
         interest = next(item for item in ADJUSTMENT_ITEMS if item.id == "interest")
