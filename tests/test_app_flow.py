@@ -18,6 +18,25 @@ def button(app: AppTest, label: str):
 
 
 class PerfectCloseFlowTests(unittest.TestCase):
+    def test_draft_restores_and_wrong_answer_revises_in_one_check(self):
+        app = AppTest.from_file("streamlit_app.py", default_timeout=30).run()
+        button(app, "Begin the close").click().run()
+        item = RECOGNITION_QUESTIONS[0]
+        wrong = next(option for option in item.options if option != item.correct)
+
+        app.radio(key=f"widget_recognition_{item.id}").set_value(wrong).run()
+        saved_value = app.query_params[SNAPSHOT_PARAM]
+        saved = decode_snapshot(saved_value[0] if isinstance(saved_value, list) else saved_value)
+        self.assertEqual(saved["ct_drafts"]["recognition"][item.id], wrong)
+
+        button(app, "Check the reporting period").click().run()
+        self.assertTrue(any(item.label == "Check revised answer" for item in app.button))
+        app.radio(key=f"widget_recognition_{item.id}").set_value(item.correct)
+        button(app, "Check revised answer").click().run()
+
+        self.assertEqual(app.session_state.ct_recognition_responses[item.id], item.correct)
+        self.assertTrue(any(item.label == "Continue" for item in app.button))
+
     def test_complete_close_reaches_debrief_without_accounting_mechanics(self):
         app = AppTest.from_file("streamlit_app.py", default_timeout=30).run()
         self.assertFalse(app.exception)
@@ -57,6 +76,7 @@ class PerfectCloseFlowTests(unittest.TestCase):
         self.assertTrue(any("Close complete" in item.value for item in app.success))
         rendered = "\n".join(item.value for item in app.markdown).lower()
         self.assertIn("final mastery: complete", "\n".join(item.value for item in app.caption).lower())
+        self.assertNotIn("chapter 6", rendered)
         for banned in ("debit", "credit", "journal", "ledger posting"):
             self.assertNotIn(banned, rendered)
 

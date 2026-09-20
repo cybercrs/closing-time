@@ -20,6 +20,7 @@ from closing_time.progress import (
     reset_saved_progress,
     restore_session_state,
     score_summary,
+    snapshot_from_state,
 )
 
 
@@ -78,6 +79,25 @@ class ProgressSnapshotTests(unittest.TestCase):
         self.assertEqual(restored["ct_attempts"]["recognition:insurance_month"], 1)
         self.assertFalse(restored["ct_first_pass"]["recognition:insurance_month"])
 
+    def test_unsubmitted_drafts_survive_refresh(self):
+        state = activity_defaults()
+        state["ct_stage"] = 3
+        state["ct_recognition_index"] = len(RECOGNITION_QUESTIONS) - 1
+        state["ct_recognition_responses"] = {item.id: item.correct for item in RECOGNITION_QUESTIONS}
+        state["ct_classification_index"] = len(ADJUSTMENT_ITEMS) - 1
+        state["ct_classification_responses"] = {item.id: item.classification for item in ADJUSTMENT_ITEMS}
+        current = ACCOUNT_CHALLENGES[0]
+        state["ct_drafts"]["account"][current.id] = {
+            "effect": current.correct_effect,
+            "ending_a": current.ending_a,
+        }
+
+        restored = decode_snapshot(encode_state(state))
+
+        self.assertIsNotNone(restored)
+        self.assertEqual(restored["ct_drafts"]["account"][current.id]["effect"], current.correct_effect)
+        self.assertEqual(restored["ct_drafts"]["account"][current.id]["ending_a"], current.ending_a)
+
     def test_skipping_a_required_stage_is_rejected(self):
         state = activity_defaults()
         state["ct_stage"] = 3
@@ -90,22 +110,8 @@ class ProgressSnapshotTests(unittest.TestCase):
         restored = decode_snapshot(raw_token)
         self.assertIsNotNone(restored)
 
-        raw = {
-            "v": 1,
-            "s": 5,
-            "ri": state["ct_recognition_index"],
-            "rr": state["ct_recognition_responses"],
-            "ci": state["ct_classification_index"],
-            "cr": state["ct_classification_responses"],
-            "ai": state["ct_account_index"],
-            "ar": state["ct_account_responses"],
-            "sr": dict(state["ct_statement_responses"], net_income=12_800),
-            "ss": True,
-            "ii": state["ct_integrity_index"],
-            "ir": state["ct_integrity_responses"],
-            "at": {},
-            "fp": {},
-        }
+        raw = snapshot_from_state(state)
+        raw["sr"] = dict(raw["sr"], net_income=12_800)
         self.assertIsNone(decode_snapshot(encode_raw(raw)))
 
     def test_malformed_or_oversized_tokens_are_rejected(self):
@@ -138,4 +144,3 @@ class ProgressSnapshotTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-

@@ -176,13 +176,15 @@ APP_CSS = f"""
 """
 
 
-STAGE_LABELS = ("Briefing", "Timing", "Evidence", "Account Ripple", "Statements", "Integrity")
+STAGE_LABELS = ("Brief", "1. Timing", "2. Evidence", "3. Account ripple", "4. Statements", "5. Integrity")
 
 
 def initialize_state() -> None:
     if "ct_restore_attempted" not in st.session_state:
-        restore_session_state(st.session_state, st.query_params.get(SNAPSHOT_PARAM))
+        restored = restore_session_state(st.session_state, st.query_params.get(SNAPSHOT_PARAM))
         st.session_state.ct_restore_attempted = True
+        if restored:
+            st.session_state.ct_scroll_to_top = True
     for key, value in activity_defaults().items():
         if key not in st.session_state:
             st.session_state[key] = value
@@ -190,10 +192,12 @@ def initialize_state() -> None:
 
 def restart_activity() -> None:
     reset_saved_progress(st.session_state, st.query_params)
+    st.session_state.ct_scroll_to_top = True
 
 
 def set_stage(stage: int) -> None:
     st.session_state.ct_stage = stage
+    st.session_state.ct_scroll_to_top = True
 
 
 def advance_item(index_key: str, count: int, next_stage: int) -> None:
@@ -202,19 +206,95 @@ def advance_item(index_key: str, count: int, next_stage: int) -> None:
         set_stage(next_stage)
     else:
         st.session_state[index_key] = index + 1
+        st.session_state.ct_scroll_to_top = True
 
 
-def remove_response(map_key: str, item_id: str) -> None:
-    responses = dict(st.session_state[map_key])
-    responses.pop(item_id, None)
-    st.session_state[map_key] = responses
+def selected_index(options: tuple | list, selected: str | None) -> int | None:
+    return list(options).index(selected) if selected in options else None
+
+
+def save_simple_draft(group: str, item_id: str, widget_key: str) -> None:
+    drafts = {key: dict(value) for key, value in st.session_state.ct_drafts.items()}
+    group_answers = dict(drafts[group])
+    value = st.session_state.get(widget_key)
+    if value is None:
+        group_answers.pop(item_id, None)
+    else:
+        group_answers[item_id] = str(value)
+    drafts[group] = group_answers
+    st.session_state.ct_drafts = drafts
+
+
+def save_account_draft(item_id: str, answer_key: str, widget_key: str) -> None:
+    drafts = {key: dict(value) for key, value in st.session_state.ct_drafts.items()}
+    account_drafts = {key: dict(value) for key, value in drafts["account"].items()}
+    answer = dict(account_drafts.get(item_id, {}))
+    value = st.session_state.get(widget_key)
+    if value is None:
+        answer.pop(answer_key, None)
+    elif answer_key in {"ending_a", "ending_b"}:
+        answer[answer_key] = int(value)
+    else:
+        answer[answer_key] = str(value)
+    account_drafts[item_id] = answer
+    drafts["account"] = account_drafts
+    st.session_state.ct_drafts = drafts
+
+
+def save_statement_draft(answer_key: str, widget_key: str) -> None:
+    drafts = {key: dict(value) for key, value in st.session_state.ct_drafts.items()}
+    statement_drafts = dict(drafts["statement"])
+    statement_drafts[answer_key] = int(st.session_state.get(widget_key, 0))
+    drafts["statement"] = statement_drafts
+    st.session_state.ct_drafts = drafts
+
+
+def render_scroll_reset() -> None:
+    """Reset after navigation without overriding student-initiated scrolling."""
+
+    if not st.session_state.pop("ct_scroll_to_top", False):
+        return
+    st.iframe(
+        """
+        <script>
+        (() => {
+          const parent = window.parent;
+          const main = parent.document.querySelector('section[data-testid="stMain"]');
+          if (!main) return;
+          let cancelled = false;
+          let finished = false;
+          const scrollingKeys = new Set(['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End', ' ']);
+          const cancel = () => { cancelled = true; cleanup(); };
+          const cancelKey = (event) => { if (scrollingKeys.has(event.key)) cancel(); };
+          const cleanup = () => {
+            parent.removeEventListener('wheel', cancel);
+            parent.removeEventListener('touchstart', cancel);
+            parent.removeEventListener('keydown', cancelKey);
+          };
+          const reset = () => {
+            if (finished) return;
+            finished = true;
+            if (!cancelled) main.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+            cleanup();
+          };
+          parent.addEventListener('wheel', cancel, { passive: true });
+          parent.addEventListener('touchstart', cancel, { passive: true });
+          parent.addEventListener('keydown', cancelKey);
+          parent.requestAnimationFrame(() => parent.requestAnimationFrame(reset));
+          parent.setTimeout(reset, 120);
+        })();
+        </script>
+        """,
+        height=1,
+        tab_index=-1,
+    )
 
 
 def render_hero() -> None:
     st.markdown(
         """
         <div class="hero">
-          <div class="hero-kicker">CHAPTER 6 INTERACTIVE CASE</div>
+          <div class="hero-kicker">MONTH-END REPORTING CASE</div>
           <h1>Closing Time</h1>
           <p><span class="clock">5:00 p.m. on May 31.</span> The reports are due tomorrow. Use the evidence to show what really happened this month.</p>
         </div>
@@ -228,7 +308,7 @@ def render_stage_row() -> None:
     pills = []
     for index, label in enumerate(STAGE_LABELS):
         status = "complete" if index < current else "active" if index == current else ""
-        pills.append(f'<div class="stage-pill {status}">{index + 1}. {escape(label)}</div>')
+        pills.append(f'<div class="stage-pill {status}">{escape(label)}</div>')
     st.markdown(f'<div class="stage-row">{"".join(pills)}</div>', unsafe_allow_html=True)
 
 
@@ -305,14 +385,29 @@ def render_recognition_stage() -> None:
     render_card(item.document, item.title, item.story)
 
     response = st.session_state.ct_recognition_responses.get(item.id)
-    if response is None:
-        with st.form(f"recognition_form_{item.id}"):
-            selected = st.radio(item.prompt, item.options, index=None, key=f"widget_recognition_{item.id}")
-            submitted = st.form_submit_button("Check the reporting period", type="primary", width="stretch")
-        if submitted:
+    result = evaluate_recognition(item.id, response) if response is not None else None
+    if result is None or not result["correct"]:
+        if result is not None:
+            st.warning(f"Reconsider the timing. {result['explanation']}")
+            st.caption(f"The amount or period that belongs in May is: {result['expected']}.")
+            st.info("Change your choice below, then select Check revised answer.")
+        draft = st.session_state.ct_drafts["recognition"].get(item.id)
+        widget_key = f"widget_recognition_{item.id}"
+        selected = st.radio(
+            item.prompt,
+            item.options,
+            index=selected_index(item.options, draft),
+            key=widget_key,
+            on_change=save_simple_draft,
+            args=("recognition", item.id, widget_key),
+        )
+        button_label = "Check revised answer" if response is not None else "Check the reporting period"
+        if st.button(button_label, type="primary", width="stretch"):
             if selected is None:
                 st.warning("Choose a response before checking your reasoning.")
             else:
+                selected = str(selected)
+                save_simple_draft("recognition", item.id, widget_key)
                 result = evaluate_recognition(item.id, selected)
                 store_simple_answer(
                     "ct_recognition_responses",
@@ -322,27 +417,15 @@ def render_recognition_stage() -> None:
                     bool(result["correct"]),
                 )
                 st.rerun()
-
-    if response is not None:
-        result = evaluate_recognition(item.id, response)
-        if result["correct"]:
-            st.success(f"Correct. {result['explanation']}")
-            st.button(
-                "Continue",
-                type="primary",
-                width="stretch",
-                on_click=advance_item,
-                args=("ct_recognition_index", len(RECOGNITION_QUESTIONS), 2),
-            )
-        else:
-            st.warning(f"Reconsider the timing. {result['explanation']}")
-            st.caption(f"The amount or period that belongs in May is: {result['expected']}.")
-            st.button(
-                "Revise my answer",
-                width="stretch",
-                on_click=remove_response,
-                args=("ct_recognition_responses", item.id),
-            )
+    else:
+        st.success(f"Correct. {result['explanation']}")
+        st.button(
+            "Continue",
+            type="primary",
+            width="stretch",
+            on_click=advance_item,
+            args=("ct_recognition_index", len(RECOGNITION_QUESTIONS), 2),
+        )
 
 
 def render_classification_stage() -> None:
@@ -355,19 +438,29 @@ def render_classification_stage() -> None:
     render_card(item.document, item.title, item.story)
 
     response = st.session_state.ct_classification_responses.get(item.id)
-    if response is None:
-        with st.form(f"classification_form_{item.id}"):
-            selected = st.radio(
-                "What type of adjustment is needed?",
-                CLASSIFICATION_OPTIONS,
-                index=None,
-                key=f"widget_classification_{item.id}",
-            )
-            submitted = st.form_submit_button("Classify the evidence", type="primary", width="stretch")
-        if submitted:
+    result = evaluate_classification(item.id, response) if response is not None else None
+    if result is None or not result["correct"]:
+        if result is not None:
+            st.warning(f"Review the relationship between cash timing and recognition. {result['explanation']}")
+            st.caption(f"This evidence is classified as: {result['expected']}.")
+            st.info("Change your choice below, then select Check revised answer.")
+        draft = st.session_state.ct_drafts["classification"].get(item.id)
+        widget_key = f"widget_classification_{item.id}"
+        selected = st.radio(
+            "What type of adjustment is needed?",
+            CLASSIFICATION_OPTIONS,
+            index=selected_index(CLASSIFICATION_OPTIONS, draft),
+            key=widget_key,
+            on_change=save_simple_draft,
+            args=("classification", item.id, widget_key),
+        )
+        button_label = "Check revised answer" if response is not None else "Classify the evidence"
+        if st.button(button_label, type="primary", width="stretch"):
             if selected is None:
                 st.warning("Choose a classification before checking your reasoning.")
             else:
+                selected = str(selected)
+                save_simple_draft("classification", item.id, widget_key)
                 result = evaluate_classification(item.id, selected)
                 store_simple_answer(
                     "ct_classification_responses",
@@ -377,27 +470,15 @@ def render_classification_stage() -> None:
                     bool(result["correct"]),
                 )
                 st.rerun()
-
-    if response is not None:
-        result = evaluate_classification(item.id, response)
-        if result["correct"]:
-            st.success(f"Correct: {result['expected']}. {result['explanation']}")
-            st.button(
-                "Continue",
-                type="primary",
-                width="stretch",
-                on_click=advance_item,
-                args=("ct_classification_index", len(ADJUSTMENT_ITEMS), 3),
-            )
-        else:
-            st.warning(f"Review the relationship between cash timing and recognition. {result['explanation']}")
-            st.caption(f"This evidence is classified as: {result['expected']}.")
-            st.button(
-                "Revise my answer",
-                width="stretch",
-                on_click=remove_response,
-                args=("ct_classification_responses", item.id),
-            )
+    else:
+        st.success(f"Correct: {result['expected']}. {result['explanation']}")
+        st.button(
+            "Continue",
+            type="primary",
+            width="stretch",
+            on_click=advance_item,
+            args=("ct_classification_index", len(ADJUSTMENT_ITEMS), 3),
+        )
 
 
 def render_account_stage() -> None:
@@ -421,56 +502,7 @@ def render_account_stage() -> None:
     )
 
     response = st.session_state.ct_account_responses.get(item.id)
-    if response is None:
-        with st.form(f"account_form_{item.id}"):
-            effect = st.radio(
-                "How do the accounts change?",
-                item.effect_options,
-                index=None,
-                key=f"widget_effect_{item.id}",
-            )
-            col1, col2 = st.columns(2)
-            ending_a = int(
-                col1.number_input(
-                    f"Ending {item.account_a}",
-                    min_value=0,
-                    max_value=1_000_000,
-                    step=100,
-                    key=f"widget_ending_a_{item.id}",
-                )
-            )
-            ending_b = int(
-                col2.number_input(
-                    f"Ending {item.account_b}",
-                    min_value=0,
-                    max_value=1_000_000,
-                    step=100,
-                    key=f"widget_ending_b_{item.id}",
-                )
-            )
-            omission = st.radio(
-                "If this adjustment were omitted, what would be misstated?",
-                item.omission_options,
-                index=None,
-                key=f"widget_omission_{item.id}",
-            )
-            submitted = st.form_submit_button("Check the account ripple", type="primary", width="stretch")
-        if submitted:
-            if effect is None or omission is None:
-                st.warning("Complete both choices before checking your reasoning.")
-            else:
-                result = evaluate_account_challenge(item.id, effect, ending_a, ending_b, omission)
-                responses = dict(st.session_state.ct_account_responses)
-                responses[item.id] = {
-                    "effect": effect,
-                    "ending_a": ending_a,
-                    "ending_b": ending_b,
-                    "omission": omission,
-                }
-                st.session_state.ct_account_responses = responses
-                record_attempt(st.session_state, f"account:{item.id}", bool(result["correct"]))
-                st.rerun()
-
+    result = None
     if response is not None:
         result = evaluate_account_challenge(
             item.id,
@@ -504,13 +536,83 @@ def render_account_stage() -> None:
                 on_click=advance_item,
                 args=("ct_account_index", len(ACCOUNT_CHALLENGES), 4),
             )
+            return
+        st.warning("Revise any account direction, ending balance, or omission effect below, then check the analysis again.")
+
+    draft = dict(st.session_state.ct_drafts["account"].get(item.id, {}))
+    effect_key = f"widget_effect_{item.id}"
+    effect = st.radio(
+        "How do the accounts change?",
+        item.effect_options,
+        index=selected_index(item.effect_options, draft.get("effect")),
+        key=effect_key,
+        on_change=save_account_draft,
+        args=(item.id, "effect", effect_key),
+    )
+    col1, col2 = st.columns(2)
+    ending_a_key = f"widget_ending_a_{item.id}"
+    ending_a = int(
+        col1.number_input(
+            f"Ending {item.account_a}",
+            min_value=0,
+            max_value=1_000_000,
+            value=int(draft.get("ending_a", 0)),
+            step=100,
+            key=ending_a_key,
+            on_change=save_account_draft,
+            args=(item.id, "ending_a", ending_a_key),
+        )
+    )
+    ending_b_key = f"widget_ending_b_{item.id}"
+    ending_b = int(
+        col2.number_input(
+            f"Ending {item.account_b}",
+            min_value=0,
+            max_value=1_000_000,
+            value=int(draft.get("ending_b", 0)),
+            step=100,
+            key=ending_b_key,
+            on_change=save_account_draft,
+            args=(item.id, "ending_b", ending_b_key),
+        )
+    )
+    omission_key = f"widget_omission_{item.id}"
+    omission = st.radio(
+        "If this adjustment were omitted, what would be misstated?",
+        item.omission_options,
+        index=selected_index(item.omission_options, draft.get("omission")),
+        key=omission_key,
+        on_change=save_account_draft,
+        args=(item.id, "omission", omission_key),
+    )
+    button_label = "Check revised account analysis" if response is not None else "Check the account ripple"
+    if st.button(button_label, type="primary", width="stretch"):
+        if effect is None or omission is None:
+            st.warning("Complete both choices before checking your reasoning.")
         else:
-            st.button(
-                "Revise my account analysis",
-                width="stretch",
-                on_click=remove_response,
-                args=("ct_account_responses", item.id),
+            answer = {
+                "effect": str(effect),
+                "ending_a": ending_a,
+                "ending_b": ending_b,
+                "omission": str(omission),
+            }
+            drafts = {key: dict(value) for key, value in st.session_state.ct_drafts.items()}
+            account_drafts = {key: dict(value) for key, value in drafts["account"].items()}
+            account_drafts[item.id] = dict(answer)
+            drafts["account"] = account_drafts
+            st.session_state.ct_drafts = drafts
+            result = evaluate_account_challenge(
+                item.id,
+                answer["effect"],
+                answer["ending_a"],
+                answer["ending_b"],
+                answer["omission"],
             )
+            responses = dict(st.session_state.ct_account_responses)
+            responses[item.id] = answer
+            st.session_state.ct_account_responses = responses
+            record_attempt(st.session_state, f"account:{item.id}", bool(result["correct"]))
+            st.rerun()
 
 
 def render_statement_cards() -> None:
@@ -572,36 +674,9 @@ def render_statement_stage() -> None:
     st.dataframe(worksheet, width="stretch", hide_index=True)
     st.caption("A positive change increases the account. A negative change decreases it.")
 
-    if not st.session_state.ct_statement_submitted:
-        prior = dict(st.session_state.ct_statement_responses)
-        with st.form("statement_form"):
-            responses = {}
-            cols = st.columns(2)
-            for index, (key, label) in enumerate(STATEMENT_FIELDS):
-                responses[key] = int(
-                    cols[index % 2].number_input(
-                        label,
-                        min_value=0,
-                        max_value=10_000_000,
-                        value=int(prior.get(key, 0)),
-                        step=100,
-                        key=f"widget_statement_{key}",
-                    )
-                )
-            submitted = st.form_submit_button("Check the financial statements", type="primary", width="stretch")
-        if submitted:
-            results = evaluate_statement_responses(responses)
-            previous = dict(st.session_state.ct_statement_responses)
-            for key, result in results.items():
-                score_key = f"statement:{key}"
-                if score_key not in st.session_state.ct_first_pass or previous.get(key) != responses[key]:
-                    record_attempt(st.session_state, score_key, bool(result["correct"]))
-            st.session_state.ct_statement_responses = responses
-            st.session_state.ct_statement_submitted = True
-            st.rerun()
-
+    prior_submission = dict(st.session_state.ct_statement_responses)
     if st.session_state.ct_statement_submitted:
-        results = evaluate_statement_responses(st.session_state.ct_statement_responses)
+        results = evaluate_statement_responses(prior_submission)
         all_correct = all(bool(result["correct"]) for result in results.values())
         for result in results.values():
             render_feedback_row(
@@ -617,10 +692,39 @@ def render_statement_stage() -> None:
             with st.expander("See every adjusted account balance"):
                 st.dataframe(balance_rows(), width="stretch", hide_index=True)
             st.button("Continue to the integrity review", type="primary", width="stretch", on_click=set_stage, args=(5,))
-        else:
-            st.warning("Some totals still reflect the unadjusted records or an incomplete statement flow. Review the highlighted amounts and try again.")
-            if st.button("Revise the statement totals", width="stretch"):
-                st.session_state.ct_statement_submitted = False
+            return
+        st.warning("Some totals still reflect the unadjusted records or an incomplete statement flow. Revise the amounts below and check them again.")
+
+    draft = dict(st.session_state.ct_drafts["statement"])
+    responses = {}
+    cols = st.columns(2)
+    for index, (key, label) in enumerate(STATEMENT_FIELDS):
+        widget_key = f"widget_statement_{key}"
+        responses[key] = int(
+            cols[index % 2].number_input(
+                label,
+                min_value=0,
+                max_value=10_000_000,
+                value=int(draft.get(key, prior_submission.get(key, 0))),
+                step=100,
+                key=widget_key,
+                on_change=save_statement_draft,
+                args=(key, widget_key),
+            )
+        )
+    button_label = "Check revised statement totals" if st.session_state.ct_statement_submitted else "Check the financial statements"
+    if st.button(button_label, type="primary", width="stretch"):
+        results = evaluate_statement_responses(responses)
+        for key, result in results.items():
+            score_key = f"statement:{key}"
+            if score_key not in st.session_state.ct_first_pass or prior_submission.get(key) != responses[key]:
+                record_attempt(st.session_state, score_key, bool(result["correct"]))
+        drafts = {key: dict(value) for key, value in st.session_state.ct_drafts.items()}
+        drafts["statement"] = dict(responses)
+        st.session_state.ct_drafts = drafts
+        st.session_state.ct_statement_responses = responses
+        st.session_state.ct_statement_submitted = True
+        st.rerun()
 
 
 def category_score(prefix: str, count: int) -> str:
@@ -647,7 +751,7 @@ def render_completion() -> None:
     st.caption(
         f"First-pass decisions: {score['correct']} of {score['total']} | Practice revisions used: {score['revisions']} | Final mastery: complete"
     )
-    st.subheader("The complete Chapter 6 chain")
+    st.subheader("The complete month-end reporting chain")
     st.markdown(
         """
         1. Identify when the economic activity occurred.
@@ -686,60 +790,51 @@ def render_integrity_stage() -> None:
     st.progress((index + 1) / len(INTEGRITY_SCENARIOS), text=f"Integrity decision {index + 1} of {len(INTEGRITY_SCENARIOS)}")
     render_card("Manager proposal", item.title, item.proposal)
     response = st.session_state.ct_integrity_responses.get(item.id)
-    if response is None:
-        with st.form(f"integrity_form_{item.id}"):
-            selected = st.radio(
-                "Would you approve this reporting choice?",
-                item.options,
-                index=None,
-                key=f"widget_integrity_{item.id}",
-            )
-            submitted = st.form_submit_button("Evaluate the proposal", type="primary", width="stretch")
-        if submitted:
-            if selected is None:
-                st.warning("Choose a response before evaluating the proposal.")
-            else:
-                result = evaluate_integrity(item.id, selected)
-                store_simple_answer(
-                    "ct_integrity_responses",
-                    item.id,
-                    selected,
-                    f"integrity:{item.id}",
-                    bool(result["correct"]),
-                )
-                st.rerun()
-
-    if response is not None:
-        result = evaluate_integrity(item.id, response)
+    result = evaluate_integrity(item.id, response) if response is not None else None
+    if result is not None:
         if result["correct"]:
             st.success(f"Sound judgment. {result['explanation']}")
         else:
             st.warning(f"This conclusion needs another look. {result['explanation']}")
         st.info(f"Financial-statement effect: {result['statement_effect']}")
         if result["correct"]:
-            if index == len(INTEGRITY_SCENARIOS) - 1:
-                st.button(
-                    "Complete the close",
-                    type="primary",
-                    width="stretch",
-                    on_click=advance_item,
-                    args=("ct_integrity_index", len(INTEGRITY_SCENARIOS), 5),
-                )
-            else:
-                st.button(
-                    "Continue",
-                    type="primary",
-                    width="stretch",
-                    on_click=advance_item,
-                    args=("ct_integrity_index", len(INTEGRITY_SCENARIOS), 5),
-                )
-        else:
+            button_label = "Complete the close" if index == len(INTEGRITY_SCENARIOS) - 1 else "Continue"
             st.button(
-                "Revise my judgment",
+                button_label,
+                type="primary",
                 width="stretch",
-                on_click=remove_response,
-                args=("ct_integrity_responses", item.id),
+                on_click=advance_item,
+                args=("ct_integrity_index", len(INTEGRITY_SCENARIOS), 5),
             )
+            return
+        st.info("Change your choice below, then select Check revised judgment.")
+
+    draft = st.session_state.ct_drafts["integrity"].get(item.id)
+    widget_key = f"widget_integrity_{item.id}"
+    selected = st.radio(
+        "Would you approve this reporting choice?",
+        item.options,
+        index=selected_index(item.options, draft),
+        key=widget_key,
+        on_change=save_simple_draft,
+        args=("integrity", item.id, widget_key),
+    )
+    button_label = "Check revised judgment" if response is not None else "Evaluate the proposal"
+    if st.button(button_label, type="primary", width="stretch"):
+        if selected is None:
+            st.warning("Choose a response before evaluating the proposal.")
+        else:
+            selected = str(selected)
+            save_simple_draft("integrity", item.id, widget_key)
+            result = evaluate_integrity(item.id, selected)
+            store_simple_answer(
+                "ct_integrity_responses",
+                item.id,
+                selected,
+                f"integrity:{item.id}",
+                bool(result["correct"]),
+            )
+            st.rerun()
 
 
 initialize_state()
@@ -750,7 +845,6 @@ render_stage_row()
 with st.sidebar:
     st.header("Closing Time")
     st.write(f"Reporting date: {REPORTING_DATE}")
-    st.write("Your progress is saved anonymously in this page's address so a refresh does not erase your work.")
     st.button("Start over", width="stretch", on_click=restart_activity)
 
 stage = int(st.session_state.ct_stage)
@@ -768,3 +862,4 @@ else:
     render_integrity_stage()
 
 sync_progress_query(st.session_state, st.query_params)
+render_scroll_reset()

@@ -19,14 +19,21 @@ from closing_time.case_data import (
 
 
 SNAPSHOT_PARAM = "progress"
-SNAPSHOT_VERSION = 1
-MAX_TOKEN_LENGTH = 12_000
-MAX_JSON_BYTES = 24_000
+SNAPSHOT_VERSION = 2
+MAX_TOKEN_LENGTH = 16_000
+MAX_JSON_BYTES = 32_000
 
 
 def activity_defaults() -> dict[str, Any]:
     return {
         "ct_stage": 0,
+        "ct_drafts": {
+            "recognition": {},
+            "classification": {},
+            "account": {},
+            "statement": {},
+            "integrity": {},
+        },
         "ct_recognition_index": 0,
         "ct_recognition_responses": {},
         "ct_classification_index": 0,
@@ -39,6 +46,7 @@ def activity_defaults() -> dict[str, Any]:
         "ct_integrity_responses": {},
         "ct_attempts": {},
         "ct_first_pass": {},
+        "ct_scroll_to_top": False,
     }
 
 
@@ -104,6 +112,62 @@ def _validate_account_answers(raw: object) -> dict[str, dict[str, object]]:
     return normalized
 
 
+def _validate_simple_draft(
+    raw: object,
+    items,
+    valid_options,
+    current_index: int,
+) -> dict[str, str]:
+    if not isinstance(raw, dict):
+        raise ValueError("Draft answers must be an object")
+    ids = [item.id for item in items]
+    allowed_ids = set(ids[: current_index + 1])
+    if set(raw) - allowed_ids:
+        raise ValueError("Draft answers are out of sequence")
+    normalized = {}
+    for item in items:
+        if item.id not in raw:
+            continue
+        value = raw[item.id]
+        if not isinstance(value, str) or value not in valid_options(item):
+            raise ValueError("Invalid draft answer")
+        normalized[item.id] = value
+    return normalized
+
+
+def _validate_account_drafts(raw: object, current_index: int) -> dict[str, dict[str, object]]:
+    if not isinstance(raw, dict):
+        raise ValueError("Account drafts must be an object")
+    ids = [item.id for item in ACCOUNT_CHALLENGES]
+    allowed_ids = set(ids[: current_index + 1])
+    if set(raw) - allowed_ids:
+        raise ValueError("Account drafts are out of sequence")
+    normalized = {}
+    for item in ACCOUNT_CHALLENGES:
+        if item.id not in raw:
+            continue
+        value = raw[item.id]
+        if not isinstance(value, dict) or set(value) - {"effect", "ending_a", "ending_b", "omission"}:
+            raise ValueError("Invalid account draft")
+        answer: dict[str, object] = {}
+        if "effect" in value:
+            if value["effect"] not in item.effect_options:
+                raise ValueError("Unknown account effect draft")
+            answer["effect"] = value["effect"]
+        if "omission" in value:
+            if value["omission"] not in item.omission_options:
+                raise ValueError("Unknown omission draft")
+            answer["omission"] = value["omission"]
+        for key in ("ending_a", "ending_b"):
+            if key in value:
+                amount = value[key]
+                if type(amount) is not int or not 0 <= amount <= 1_000_000:
+                    raise ValueError("Invalid ending-balance draft")
+                answer[key] = amount
+        normalized[item.id] = answer
+    return normalized
+
+
 def _validate_statement_answers(raw: object, submitted: bool) -> dict[str, int]:
     if not isinstance(raw, dict):
         raise ValueError("Statement answers must be an object")
@@ -130,7 +194,7 @@ def _valid_score_keys() -> set[str]:
 
 
 def validate_snapshot(raw: object) -> dict[str, Any]:
-    expected_keys = {"v", "s", "ri", "rr", "ci", "cr", "ai", "ar", "sr", "ss", "ii", "ir", "at", "fp"}
+    expected_keys = {"v", "s", "dr", "ri", "rr", "ci", "cr", "ai", "ar", "sr", "ss", "ii", "ir", "at", "fp"}
     if not isinstance(raw, dict) or set(raw) != expected_keys or raw["v"] != SNAPSHOT_VERSION:
         raise ValueError("Unsupported snapshot")
 
@@ -147,6 +211,27 @@ def validate_snapshot(raw: object) -> dict[str, Any]:
     classification_index = _require_index(raw["ci"], len(ADJUSTMENT_ITEMS))
     account_index = _require_index(raw["ai"], len(ACCOUNT_CHALLENGES))
     integrity_index = _require_index(raw["ii"], len(INTEGRITY_SCENARIOS))
+
+    raw_drafts = raw["dr"]
+    if not isinstance(raw_drafts, dict) or set(raw_drafts) != {"r", "c", "a", "s", "i"}:
+        raise ValueError("Invalid draft groups")
+    drafts = {
+        "recognition": _validate_simple_draft(
+            raw_drafts["r"], RECOGNITION_QUESTIONS, lambda item: item.options, recognition_index
+        ),
+        "classification": _validate_simple_draft(
+            raw_drafts["c"], ADJUSTMENT_ITEMS, lambda _item: CLASSIFICATION_OPTIONS, classification_index
+        ),
+        "account": _validate_account_drafts(raw_drafts["a"], account_index),
+        "statement": _validate_statement_answers(raw_drafts["s"], False),
+        "integrity": _validate_simple_draft(
+            raw_drafts["i"], INTEGRITY_SCENARIOS, lambda item: item.options, integrity_index
+        ),
+    }
+    minimum_stages = {"recognition": 1, "classification": 2, "account": 3, "statement": 4, "integrity": 5}
+    for group, minimum_stage in minimum_stages.items():
+        if stage < minimum_stage and drafts[group]:
+            raise ValueError("Future draft is not allowed")
 
     submitted = raw["ss"]
     if type(submitted) is not bool:
@@ -226,6 +311,7 @@ def validate_snapshot(raw: object) -> dict[str, Any]:
 
     return {
         "ct_stage": stage,
+        "ct_drafts": drafts,
         "ct_recognition_index": recognition_index,
         "ct_recognition_responses": recognition,
         "ct_classification_index": classification_index,
@@ -245,6 +331,13 @@ def snapshot_from_state(state: MutableMapping[str, Any]) -> dict[str, Any]:
     return {
         "v": SNAPSHOT_VERSION,
         "s": state["ct_stage"],
+        "dr": {
+            "r": state["ct_drafts"]["recognition"],
+            "c": state["ct_drafts"]["classification"],
+            "a": state["ct_drafts"]["account"],
+            "s": state["ct_drafts"]["statement"],
+            "i": state["ct_drafts"]["integrity"],
+        },
         "ri": state["ct_recognition_index"],
         "rr": state["ct_recognition_responses"],
         "ci": state["ct_classification_index"],
