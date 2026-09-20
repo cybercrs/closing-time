@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import hashlib
+import random
 from html import escape
 
 import streamlit as st
@@ -14,7 +16,7 @@ from closing_time.case_data import (
     INTEGRITY_SCENARIOS,
     RECOGNITION_QUESTIONS,
     REPORTING_DATE,
-    STATEMENT_FIELDS,
+    STATEMENT_QUESTIONS,
     UNADJUSTED_BALANCES,
 )
 from closing_time.engine import (
@@ -126,6 +128,14 @@ APP_CSS = f"""
     .account-box span {{ color: var(--muted); display: block; font-size: 0.8rem; font-weight: 700; }}
     .account-box strong {{ color: var(--ud-blue); display: block; font-size: 1.35rem; margin-top: 0.15rem; }}
 
+    .equation-grid {{ display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; margin: 0.85rem 0 1.2rem; }}
+    .equation-card {{ background: #FFFFFF; border: 1px solid #D9E0EA; border-radius: 13px; padding: 1rem 1.1rem; }}
+    .equation-card.after {{ border-top: 5px solid var(--ud-red); }}
+    .equation-card.before {{ border-top: 5px solid var(--ud-blue); }}
+    .equation-label {{ color: var(--muted); font-size: 0.78rem; font-weight: 850; letter-spacing: 0.07em; text-transform: uppercase; }}
+    .equation {{ color: var(--ink); font-size: clamp(1rem, 2.2vw, 1.35rem); font-weight: 850; margin: 0.45rem 0 0.2rem; }}
+    .equation-caption {{ color: var(--muted); font-size: 0.82rem; }}
+
     .feedback-row {{
         align-items: flex-start; background: #FFFFFF; border: 1px solid #D9E0EA; border-radius: 10px;
         display: flex; gap: 1rem; justify-content: space-between; margin: 0.42rem 0; padding: 0.7rem 0.82rem;
@@ -168,7 +178,7 @@ APP_CSS = f"""
         .stage-row {{ grid-template-columns: 1fr; }}
         .stage-pill {{ display: none; }}
         .stage-pill.active {{ display: block; }}
-        .concept-grid, .account-strip, .score-grid {{ grid-template-columns: 1fr; }}
+        .concept-grid, .account-strip, .equation-grid, .score-grid {{ grid-template-columns: 1fr; }}
         .feedback-row {{ display: block; }}
         .feedback-value {{ display: block; margin-top: 0.3rem; }}
     }}
@@ -213,6 +223,24 @@ def selected_index(options: tuple | list, selected: str | None) -> int | None:
     return list(options).index(selected) if selected in options else None
 
 
+def shuffled(items: tuple | list, salt: str) -> list:
+    """Return a stable per-student order that survives reruns and refreshes."""
+
+    digest = hashlib.sha256(f"{st.session_state.ct_shuffle_seed}:{salt}".encode("utf-8")).digest()
+    rng = random.Random(int.from_bytes(digest[:8], "big"))
+    ordered = list(items)
+    rng.shuffle(ordered)
+    if len(ordered) > 1 and ordered == list(items):
+        ordered = ordered[1:] + ordered[:1]
+    return ordered
+
+
+def escape_currency_markdown(value: str) -> str:
+    """Keep currency symbols from being interpreted as inline math."""
+
+    return value.replace("$", r"\$")
+
+
 def save_simple_draft(group: str, item_id: str, widget_key: str) -> None:
     drafts = {key: dict(value) for key, value in st.session_state.ct_drafts.items()}
     group_answers = dict(drafts[group])
@@ -232,8 +260,6 @@ def save_account_draft(item_id: str, answer_key: str, widget_key: str) -> None:
     value = st.session_state.get(widget_key)
     if value is None:
         answer.pop(answer_key, None)
-    elif answer_key in {"ending_a", "ending_b"}:
-        answer[answer_key] = int(value)
     else:
         answer[answer_key] = str(value)
     account_drafts[item_id] = answer
@@ -244,7 +270,11 @@ def save_account_draft(item_id: str, answer_key: str, widget_key: str) -> None:
 def save_statement_draft(answer_key: str, widget_key: str) -> None:
     drafts = {key: dict(value) for key, value in st.session_state.ct_drafts.items()}
     statement_drafts = dict(drafts["statement"])
-    statement_drafts[answer_key] = int(st.session_state.get(widget_key, 0))
+    value = st.session_state.get(widget_key)
+    if value is None:
+        statement_drafts.pop(answer_key, None)
+    else:
+        statement_drafts[answer_key] = str(value)
     drafts["statement"] = statement_drafts
     st.session_state.ct_drafts = drafts
 
@@ -296,7 +326,7 @@ def render_hero() -> None:
         <div class="hero">
           <div class="hero-kicker">MONTH-END REPORTING CASE</div>
           <h1>Closing Time</h1>
-          <p><span class="clock">5:00 p.m. on May 31.</span> The reports are due tomorrow. Use the evidence to show what really happened this month.</p>
+          <p><span class="clock">5:00 p.m. on May 31.</span><br>The reports are due tomorrow. Use the evidence to show what really happened this month.</p>
         </div>
         """,
         unsafe_allow_html=True,
@@ -357,7 +387,7 @@ def render_briefing() -> None:
         <div class="concept-grid">
           <div class="concept-card"><div class="concept-number">01</div><strong>Choose the period</strong><span>Decide when revenue and expense belong.</span></div>
           <div class="concept-card"><div class="concept-number">02</div><strong>Read the evidence</strong><span>Distinguish deferrals from accruals.</span></div>
-          <div class="concept-card"><div class="concept-number">03</div><strong>Trace the ripple</strong><span>Calculate account changes and ending balances.</span></div>
+          <div class="concept-card"><div class="concept-number">03</div><strong>Trace the ripple</strong><span>Determine account directions and financial-statement effects.</span></div>
           <div class="concept-card"><div class="concept-number">04</div><strong>Protect the story</strong><span>Prepare statements and resist misleading choices.</span></div>
         </div>
         """,
@@ -432,8 +462,8 @@ def render_classification_stage() -> None:
     index = int(st.session_state.ct_classification_index)
     item = ADJUSTMENT_ITEMS[index]
     st.markdown('<div class="eyebrow">Step 2 of the reasoning chain</div>', unsafe_allow_html=True)
-    st.header("Sort the evidence")
-    st.write("Each item changes one balance-sheet account and one income-statement account. Identify why the records need updating.")
+    st.header("Identify the accrual accounting transaction")
+    st.write("Use the timing of cash and economic activity to identify which accrual accounting transaction the evidence represents.")
     st.progress((index + 1) / len(ADJUSTMENT_ITEMS), text=f"Evidence item {index + 1} of {len(ADJUSTMENT_ITEMS)}")
     render_card(item.document, item.title, item.story)
 
@@ -447,17 +477,17 @@ def render_classification_stage() -> None:
         draft = st.session_state.ct_drafts["classification"].get(item.id)
         widget_key = f"widget_classification_{item.id}"
         selected = st.radio(
-            "What type of adjustment is needed?",
+            "What type of accrual accounting transaction does this represent?",
             CLASSIFICATION_OPTIONS,
             index=selected_index(CLASSIFICATION_OPTIONS, draft),
             key=widget_key,
             on_change=save_simple_draft,
             args=("classification", item.id, widget_key),
         )
-        button_label = "Check revised answer" if response is not None else "Classify the evidence"
+        button_label = "Check revised answer" if response is not None else "Identify the transaction"
         if st.button(button_label, type="primary", width="stretch"):
             if selected is None:
-                st.warning("Choose a classification before checking your reasoning.")
+                st.warning("Choose an accrual accounting transaction type before checking your reasoning.")
             else:
                 selected = str(selected)
                 save_simple_draft("classification", item.id, widget_key)
@@ -487,7 +517,7 @@ def render_account_stage() -> None:
     source = next(adjustment for adjustment in ADJUSTMENT_ITEMS if adjustment.id == item.adjustment_id)
     st.markdown('<div class="eyebrow">Step 3 of the reasoning chain</div>', unsafe_allow_html=True)
     st.header("Trace the account ripple")
-    st.write("Determine which accounts change, calculate their ending balances, and diagnose what would be wrong if the adjustment were omitted.")
+    st.write("Determine which accounts increase or decrease, then diagnose the financial-statement effect if the transaction were omitted.")
     st.progress((index + 1) / len(ACCOUNT_CHALLENGES), text=f"Account ripple {index + 1} of {len(ACCOUNT_CHALLENGES)}")
     render_card(source.document, item.title, source.story)
     st.caption(item.instruction)
@@ -507,25 +537,11 @@ def render_account_stage() -> None:
         result = evaluate_account_challenge(
             item.id,
             str(response["effect"]),
-            int(response["ending_a"]),
-            int(response["ending_b"]),
             str(response["omission"]),
         )
         checks = result["checks"]
         expected = result["expected"]
         render_feedback_row("Account directions", bool(checks["effect"]), str(expected["effect"]))
-        render_feedback_row(
-            f"Ending {item.account_a}",
-            bool(checks["ending_a"]),
-            "Start with the unadjusted balance and apply the increase or decrease.",
-            format_currency(int(expected["ending_a"])),
-        )
-        render_feedback_row(
-            f"Ending {item.account_b}",
-            bool(checks["ending_b"]),
-            "Start with the unadjusted balance and apply the increase or decrease.",
-            format_currency(int(expected["ending_b"])),
-        )
         render_feedback_row("Omission effect", bool(checks["omission"]), str(expected["omission"]))
         st.info(str(result["explanation"]))
         if result["correct"]:
@@ -537,53 +553,30 @@ def render_account_stage() -> None:
                 args=("ct_account_index", len(ACCOUNT_CHALLENGES), 4),
             )
             return
-        st.warning("Revise any account direction, ending balance, or omission effect below, then check the analysis again.")
+        st.warning("Revise either the account direction or omission effect below, then check the analysis again.")
 
     draft = dict(st.session_state.ct_drafts["account"].get(item.id, {}))
+    effect_options = shuffled(item.effect_options, f"account-effect:{item.id}")
     effect_key = f"widget_effect_{item.id}"
     effect = st.radio(
         "How do the accounts change?",
-        item.effect_options,
-        index=selected_index(item.effect_options, draft.get("effect")),
+        effect_options,
+        index=selected_index(effect_options, draft.get("effect")),
         key=effect_key,
         on_change=save_account_draft,
         args=(item.id, "effect", effect_key),
+        format_func=escape_currency_markdown,
     )
-    col1, col2 = st.columns(2)
-    ending_a_key = f"widget_ending_a_{item.id}"
-    ending_a = int(
-        col1.number_input(
-            f"Ending {item.account_a}",
-            min_value=0,
-            max_value=1_000_000,
-            value=int(draft.get("ending_a", 0)),
-            step=100,
-            key=ending_a_key,
-            on_change=save_account_draft,
-            args=(item.id, "ending_a", ending_a_key),
-        )
-    )
-    ending_b_key = f"widget_ending_b_{item.id}"
-    ending_b = int(
-        col2.number_input(
-            f"Ending {item.account_b}",
-            min_value=0,
-            max_value=1_000_000,
-            value=int(draft.get("ending_b", 0)),
-            step=100,
-            key=ending_b_key,
-            on_change=save_account_draft,
-            args=(item.id, "ending_b", ending_b_key),
-        )
-    )
+    omission_options = shuffled(item.omission_options, f"account-omission:{item.id}")
     omission_key = f"widget_omission_{item.id}"
     omission = st.radio(
         "If this adjustment were omitted, what would be misstated?",
-        item.omission_options,
-        index=selected_index(item.omission_options, draft.get("omission")),
+        omission_options,
+        index=selected_index(omission_options, draft.get("omission")),
         key=omission_key,
         on_change=save_account_draft,
         args=(item.id, "omission", omission_key),
+        format_func=escape_currency_markdown,
     )
     button_label = "Check revised account analysis" if response is not None else "Check the account ripple"
     if st.button(button_label, type="primary", width="stretch"):
@@ -592,8 +585,6 @@ def render_account_stage() -> None:
         else:
             answer = {
                 "effect": str(effect),
-                "ending_a": ending_a,
-                "ending_b": ending_b,
                 "omission": str(omission),
             }
             drafts = {key: dict(value) for key, value in st.session_state.ct_drafts.items()}
@@ -604,8 +595,6 @@ def render_account_stage() -> None:
             result = evaluate_account_challenge(
                 item.id,
                 answer["effect"],
-                answer["ending_a"],
-                answer["ending_b"],
                 answer["omission"],
             )
             responses = dict(st.session_state.ct_account_responses)
@@ -668,52 +657,79 @@ def render_statement_cards() -> None:
 
 def render_statement_stage() -> None:
     st.markdown('<div class="eyebrow">Step 4 of the reasoning chain</div>', unsafe_allow_html=True)
-    st.header("Turn the adjusted accounts into statements")
-    st.write("Use the unadjusted balances and the net changes below. Calculate the adjusted totals that flow through the three financial statements.")
-    worksheet = [{key: value for key, value in row.items() if key != "Adjusted"} for row in balance_rows()]
-    st.dataframe(worksheet, width="stretch", hide_index=True)
-    st.caption("A positive change increases the account. A negative change decreases it.")
+    st.header("Compare the financial story before and after adjustment")
+    st.write("Study how the account balances and accounting equation change, then explain what the comparison means for the financial statements.")
+    comparison = [
+        {
+            "Account": row["Account"],
+            "Unadjusted balance": row["Unadjusted"],
+            "Adjusted balance": row["Adjusted"],
+        }
+        for row in balance_rows()
+    ]
+    st.dataframe(comparison, width="stretch", hide_index=True)
+
+    before = statement_values(UNADJUSTED_BALANCES)
+    after = statement_values(adjusted_balances())
+    st.markdown(
+        f"""
+        <div class="equation-grid">
+          <div class="equation-card before">
+            <div class="equation-label">Before adjustments</div>
+            <div class="equation">{format_currency(before['total_assets'])} = {format_currency(before['total_liabilities'])} + {format_currency(before['total_equity'])}</div>
+            <div class="equation-caption">A = L + SE &middot; Assets = Liabilities + Stockholders' Equity</div>
+          </div>
+          <div class="equation-card after">
+            <div class="equation-label">After adjustments</div>
+            <div class="equation">{format_currency(after['total_assets'])} = {format_currency(after['total_liabilities'])} + {format_currency(after['total_equity'])}</div>
+            <div class="equation-caption">A = L + SE &middot; Assets = Liabilities + Stockholders' Equity</div>
+          </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+    st.caption("Both equations balance. The conceptual question is whether the balances faithfully describe May.")
 
     prior_submission = dict(st.session_state.ct_statement_responses)
     if st.session_state.ct_statement_submitted:
         results = evaluate_statement_responses(prior_submission)
         all_correct = all(bool(result["correct"]) for result in results.values())
-        for result in results.values():
+        for index, result in enumerate(results.values(), start=1):
+            detail = str(result["explanation"])
+            if not result["correct"]:
+                detail = f"Correct response: {result['expected']}. {detail}"
             render_feedback_row(
-                str(result["label"]),
+                f"Concept {index}",
                 bool(result["correct"]),
-                "Use the adjusted account balances and the statement flow.",
-                format_currency(int(result["expected"])),
+                detail,
             )
         if all_correct:
-            st.success("The May statements now tell one consistent story. Net income flows into retained earnings, and the balance sheet balances.")
+            st.success("The adjusted accounts now tell one connected story: May activity determines net income, net income flows into retained earnings, and the balance sheet remains in balance.")
             st.subheader("Completed statements")
             render_statement_cards()
-            with st.expander("See every adjusted account balance"):
-                st.dataframe(balance_rows(), width="stretch", hide_index=True)
             st.button("Continue to the integrity review", type="primary", width="stretch", on_click=set_stage, args=(5,))
             return
-        st.warning("Some totals still reflect the unadjusted records or an incomplete statement flow. Revise the amounts below and check them again.")
+        st.warning("Revisit the connections among the account balances, net income, retained earnings, and the accounting equation.")
 
     draft = dict(st.session_state.ct_drafts["statement"])
     responses = {}
-    cols = st.columns(2)
-    for index, (key, label) in enumerate(STATEMENT_FIELDS):
-        widget_key = f"widget_statement_{key}"
-        responses[key] = int(
-            cols[index % 2].number_input(
-                label,
-                min_value=0,
-                max_value=10_000_000,
-                value=int(draft.get(key, prior_submission.get(key, 0))),
-                step=100,
-                key=widget_key,
-                on_change=save_statement_draft,
-                args=(key, widget_key),
-            )
+    for item in STATEMENT_QUESTIONS:
+        widget_key = f"widget_statement_{item.id}"
+        selected = draft.get(item.id, prior_submission.get(item.id))
+        responses[item.id] = st.radio(
+            item.prompt,
+            item.options,
+            index=selected_index(item.options, selected),
+            key=widget_key,
+            on_change=save_statement_draft,
+            args=(item.id, widget_key),
         )
-    button_label = "Check revised statement totals" if st.session_state.ct_statement_submitted else "Check the financial statements"
+    button_label = "Check revised reasoning" if st.session_state.ct_statement_submitted else "Check the statement connections"
     if st.button(button_label, type="primary", width="stretch"):
+        if any(value is None for value in responses.values()):
+            st.warning("Answer all three conceptual questions before checking your reasoning.")
+            return
+        responses = {key: str(value) for key, value in responses.items()}
         results = evaluate_statement_responses(responses)
         for key, result in results.items():
             score_key = f"statement:{key}"
@@ -735,14 +751,14 @@ def category_score(prefix: str, count: int) -> str:
 
 def render_completion() -> None:
     score = score_summary(st.session_state)
-    st.success("Close complete. Every recognition decision, account change, ending balance, and financial-statement total has been resolved.")
+    st.success("Close complete. Every recognition decision, account change, statement connection, and reporting judgment has been resolved.")
     st.markdown(
         f"""
         <div class="score-grid">
           <div class="score-box"><strong>{category_score('recognition:', len(RECOGNITION_QUESTIONS))}</strong><span>Timing first pass</span></div>
-          <div class="score-box"><strong>{category_score('classification:', len(ADJUSTMENT_ITEMS))}</strong><span>Classification first pass</span></div>
+          <div class="score-box"><strong>{category_score('classification:', len(ADJUSTMENT_ITEMS))}</strong><span>Transaction type first pass</span></div>
           <div class="score-box"><strong>{category_score('account:', len(ACCOUNT_CHALLENGES))}</strong><span>Account ripple first pass</span></div>
-          <div class="score-box"><strong>{category_score('statement:', len(STATEMENT_FIELDS))}</strong><span>Statement totals first pass</span></div>
+          <div class="score-box"><strong>{category_score('statement:', len(STATEMENT_QUESTIONS))}</strong><span>Statement connections first pass</span></div>
           <div class="score-box"><strong>{category_score('integrity:', len(INTEGRITY_SCENARIOS))}</strong><span>Integrity first pass</span></div>
         </div>
         """,
@@ -756,9 +772,9 @@ def render_completion() -> None:
         """
         1. Identify when the economic activity occurred.
         2. Decide whether cash came before or after recognition.
-        3. Classify the needed adjustment.
-        4. Increase or decrease the affected accounts and calculate ending balances.
-        5. Trace the effect through net income, retained earnings, and the balance sheet.
+        3. Classify the type of accrual accounting transaction.
+        4. Determine how the affected accounts increase or decrease and what would be misstated if the transaction were omitted.
+        5. Compare unadjusted and adjusted balances, then trace the effect through net income, retained earnings, and the accounting equation.
         6. Reject changes that make the reporting period look better by making it less faithful.
         """
     )

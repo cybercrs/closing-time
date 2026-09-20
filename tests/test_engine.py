@@ -6,7 +6,7 @@ from closing_time.case_data import (
     ADJUSTMENT_ITEMS,
     INTEGRITY_SCENARIOS,
     RECOGNITION_QUESTIONS,
-    STATEMENT_FIELDS,
+    STATEMENT_QUESTIONS,
     UNADJUSTED_BALANCES,
 )
 from closing_time.engine import (
@@ -66,33 +66,36 @@ class ClosingCalculationTests(unittest.TestCase):
         self.assertEqual(classes.count("Accrued revenue"), 1)
         self.assertEqual(classes.count("Accrued expense"), 2)
 
+    def test_interest_evidence_identifies_the_studio_as_borrower(self):
+        interest = next(item for item in ADJUSTMENT_ITEMS if item.id == "interest")
+        wording = f"{interest.document} {interest.title} {interest.story}".lower()
+        self.assertIn("borrower", wording)
+        self.assertIn("lender", wording)
+
     def test_account_challenges_check_direction_balance_and_omission_effect(self):
         for item in ACCOUNT_CHALLENGES:
             result = evaluate_account_challenge(
                 item.id,
                 item.correct_effect,
-                item.ending_a,
-                item.ending_b,
                 item.correct_omission,
             )
             self.assertTrue(result["correct"], item.id)
             wrong = evaluate_account_challenge(
                 item.id,
                 item.effect_options[-1],
-                0,
-                0,
                 item.omission_options[-1],
             )
             self.assertFalse(wrong["correct"], item.id)
 
-    def test_statement_feedback_is_item_level(self):
-        expected = statement_values()
-        responses = {key: expected[key] for key, _ in STATEMENT_FIELDS}
-        responses["net_income"] = 12_800
+    def test_statement_questions_check_conceptual_connections(self):
+        self.assertEqual(len(STATEMENT_QUESTIONS), 3)
+        responses = {item.id: item.correct for item in STATEMENT_QUESTIONS}
+        first = STATEMENT_QUESTIONS[0]
+        responses[first.id] = next(option for option in first.options if option != first.correct)
         results = evaluate_statement_responses(responses)
-        self.assertFalse(results["net_income"]["correct"])
-        self.assertEqual(results["net_income"]["expected"], 17_100)
-        self.assertTrue(results["total_assets"]["correct"])
+        self.assertFalse(results[first.id]["correct"])
+        self.assertEqual(results[first.id]["expected"], first.correct)
+        self.assertTrue(results[STATEMENT_QUESTIONS[1].id]["correct"])
 
     def test_integrity_round_includes_transparent_and_misleading_choices(self):
         acceptable = [item for item in INTEGRITY_SCENARIOS if item.correct.startswith("Acceptable")]
@@ -123,4 +126,3 @@ class ClosingCalculationTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-

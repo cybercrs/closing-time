@@ -1,8 +1,8 @@
 # Closing Time
 
-Closing Time is a Streamlit learning experience for introductory accounting. Students complete the May close for a fictional service business by deciding when revenue and expense belong, classifying adjustment evidence, calculating account increases or decreases and ending balances, preparing linked financial-statement totals, and evaluating reporting-integrity choices.
+Closing Time is a Streamlit learning experience for introductory accounting. Students complete the May close for a fictional service business by deciding when revenue and expense belong, identifying accrual accounting transactions, determining account increases and decreases, comparing unadjusted and adjusted financial statements, and evaluating reporting-integrity choices.
 
-The activity deliberately avoids journal mechanics. Student work is framed through recognition timing, account direction, ending account balances, and financial-statement effects.
+The activity deliberately avoids journal mechanics. Student work is framed through recognition timing, account direction, financial-statement effects, and the connections among net income, retained earnings, and the accounting equation.
 
 ## Run locally
 

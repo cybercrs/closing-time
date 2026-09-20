@@ -8,9 +8,8 @@ from closing_time.case_data import (
     ADJUSTMENT_ITEMS,
     INTEGRITY_SCENARIOS,
     RECOGNITION_QUESTIONS,
-    STATEMENT_FIELDS,
+    STATEMENT_QUESTIONS,
 )
-from closing_time.engine import statement_values
 from closing_time.progress import (
     SNAPSHOT_PARAM,
     activity_defaults,
@@ -40,14 +39,11 @@ def completed_state():
     state["ct_account_responses"] = {
         item.id: {
             "effect": item.correct_effect,
-            "ending_a": item.ending_a,
-            "ending_b": item.ending_b,
             "omission": item.correct_omission,
         }
         for item in ACCOUNT_CHALLENGES
     }
-    expected = statement_values()
-    state["ct_statement_responses"] = {key: expected[key] for key, _ in STATEMENT_FIELDS}
+    state["ct_statement_responses"] = {item.id: item.correct for item in STATEMENT_QUESTIONS}
     state["ct_statement_submitted"] = True
     state["ct_integrity_index"] = len(INTEGRITY_SCENARIOS) - 1
     state["ct_integrity_responses"] = {item.id: item.correct for item in INTEGRITY_SCENARIOS}
@@ -63,7 +59,10 @@ class ProgressSnapshotTests(unittest.TestCase):
         restored = decode_snapshot(token)
         self.assertIsNotNone(restored)
         self.assertEqual(restored["ct_stage"], 5)
-        self.assertEqual(restored["ct_statement_responses"]["net_income"], 17_100)
+        self.assertEqual(
+            restored["ct_statement_responses"][STATEMENT_QUESTIONS[0].id],
+            STATEMENT_QUESTIONS[0].correct,
+        )
         self.assertNotIn("name", token.lower())
         self.assertNotIn("email", token.lower())
 
@@ -89,14 +88,14 @@ class ProgressSnapshotTests(unittest.TestCase):
         current = ACCOUNT_CHALLENGES[0]
         state["ct_drafts"]["account"][current.id] = {
             "effect": current.correct_effect,
-            "ending_a": current.ending_a,
+            "omission": current.correct_omission,
         }
 
         restored = decode_snapshot(encode_state(state))
 
         self.assertIsNotNone(restored)
         self.assertEqual(restored["ct_drafts"]["account"][current.id]["effect"], current.correct_effect)
-        self.assertEqual(restored["ct_drafts"]["account"][current.id]["ending_a"], current.ending_a)
+        self.assertEqual(restored["ct_drafts"]["account"][current.id]["omission"], current.correct_omission)
 
     def test_skipping_a_required_stage_is_rejected(self):
         state = activity_defaults()
@@ -111,7 +110,8 @@ class ProgressSnapshotTests(unittest.TestCase):
         self.assertIsNotNone(restored)
 
         raw = snapshot_from_state(state)
-        raw["sr"] = dict(raw["sr"], net_income=12_800)
+        first = STATEMENT_QUESTIONS[0]
+        raw["sr"] = dict(raw["sr"], **{first.id: next(option for option in first.options if option != first.correct)})
         self.assertIsNone(decode_snapshot(encode_raw(raw)))
 
     def test_malformed_or_oversized_tokens_are_rejected(self):

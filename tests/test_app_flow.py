@@ -7,9 +7,8 @@ from closing_time.case_data import (
     ADJUSTMENT_ITEMS,
     INTEGRITY_SCENARIOS,
     RECOGNITION_QUESTIONS,
-    STATEMENT_FIELDS,
+    STATEMENT_QUESTIONS,
 )
-from closing_time.engine import statement_values
 from closing_time.progress import SNAPSHOT_PARAM, decode_snapshot
 
 
@@ -49,21 +48,22 @@ class PerfectCloseFlowTests(unittest.TestCase):
 
         for item in ADJUSTMENT_ITEMS:
             app.radio(key=f"widget_classification_{item.id}").set_value(item.classification)
-            button(app, "Classify the evidence").click().run()
+            button(app, "Identify the transaction").click().run()
             button(app, "Continue").click().run()
 
         for item in ACCOUNT_CHALLENGES:
+            self.assertEqual(len(app.number_input), 0)
+            self.assertNotEqual(app.radio(key=f"widget_effect_{item.id}").options, list(item.effect_options))
             app.radio(key=f"widget_effect_{item.id}").set_value(item.correct_effect)
-            app.number_input(key=f"widget_ending_a_{item.id}").set_value(item.ending_a)
-            app.number_input(key=f"widget_ending_b_{item.id}").set_value(item.ending_b)
             app.radio(key=f"widget_omission_{item.id}").set_value(item.correct_omission)
             button(app, "Check the account ripple").click().run()
             button(app, "Continue").click().run()
 
-        expected = statement_values()
-        for key, _ in STATEMENT_FIELDS:
-            app.number_input(key=f"widget_statement_{key}").set_value(expected[key])
-        button(app, "Check the financial statements").click().run()
+        for item in STATEMENT_QUESTIONS:
+            app.radio(key=f"widget_statement_{item.id}").set_value(item.correct)
+        equation_copy = "\n".join(item.value for item in app.markdown)
+        self.assertIn("A = L + SE", equation_copy)
+        button(app, "Check the statement connections").click().run()
         button(app, "Continue to the integrity review").click().run()
 
         for index, item in enumerate(INTEGRITY_SCENARIOS):

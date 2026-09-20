@@ -9,7 +9,7 @@ from closing_time.case_data import (
     ADJUSTMENT_ITEMS,
     INTEGRITY_SCENARIOS,
     RECOGNITION_QUESTIONS,
-    STATEMENT_FIELDS,
+    STATEMENT_QUESTIONS,
     UNADJUSTED_BALANCES,
     AccountChallenge,
     AdjustmentItem,
@@ -140,15 +140,11 @@ def evaluate_classification(item_id: str, selected: str) -> dict[str, object]:
 def evaluate_account_challenge(
     item_id: str,
     effect: str,
-    ending_a: int,
-    ending_b: int,
     omission: str,
 ) -> dict[str, object]:
     item = challenge_by_id(item_id)
     checks = {
         "effect": effect == item.correct_effect,
-        "ending_a": int(ending_a) == item.ending_a,
-        "ending_b": int(ending_b) == item.ending_b,
         "omission": omission == item.correct_omission,
     }
     return {
@@ -156,24 +152,22 @@ def evaluate_account_challenge(
         "checks": checks,
         "expected": {
             "effect": item.correct_effect,
-            "ending_a": item.ending_a,
-            "ending_b": item.ending_b,
             "omission": item.correct_omission,
         },
         "explanation": item.explanation,
     }
 
 
-def evaluate_statement_responses(responses: Mapping[str, int]) -> dict[str, dict[str, object]]:
-    expected = statement_values()
+def evaluate_statement_responses(responses: Mapping[str, str]) -> dict[str, dict[str, object]]:
     results = {}
-    for key, label in STATEMENT_FIELDS:
-        submitted = int(responses.get(key, 0))
-        results[key] = {
-            "label": label,
+    for item in STATEMENT_QUESTIONS:
+        submitted = str(responses.get(item.id, ""))
+        results[item.id] = {
+            "label": item.prompt,
             "submitted": submitted,
-            "expected": expected[key],
-            "correct": submitted == expected[key],
+            "expected": item.correct,
+            "correct": submitted == item.correct,
+            "explanation": item.explanation,
         }
     return results
 

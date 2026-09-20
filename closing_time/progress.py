@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import base64
 import json
+import secrets
 import zlib
 from collections.abc import MutableMapping
 from typing import Any
@@ -14,12 +15,12 @@ from closing_time.case_data import (
     CLASSIFICATION_OPTIONS,
     INTEGRITY_SCENARIOS,
     RECOGNITION_QUESTIONS,
-    STATEMENT_FIELDS,
+    STATEMENT_QUESTIONS,
 )
 
 
 SNAPSHOT_PARAM = "progress"
-SNAPSHOT_VERSION = 2
+SNAPSHOT_VERSION = 3
 MAX_TOKEN_LENGTH = 16_000
 MAX_JSON_BYTES = 32_000
 
@@ -27,6 +28,7 @@ MAX_JSON_BYTES = 32_000
 def activity_defaults() -> dict[str, Any]:
     return {
         "ct_stage": 0,
+        "ct_shuffle_seed": secrets.randbits(63),
         "ct_drafts": {
             "recognition": {},
             "classification": {},
@@ -100,14 +102,10 @@ def _validate_account_answers(raw: object) -> dict[str, dict[str, object]]:
     normalized = {}
     for item in ACCOUNT_CHALLENGES[: len(raw)]:
         value = raw[item.id]
-        if not isinstance(value, dict) or set(value) != {"effect", "ending_a", "ending_b", "omission"}:
+        if not isinstance(value, dict) or set(value) != {"effect", "omission"}:
             raise ValueError("Invalid account answer")
         if value["effect"] not in item.effect_options or value["omission"] not in item.omission_options:
             raise ValueError("Unknown account choice")
-        if type(value["ending_a"]) is not int or type(value["ending_b"]) is not int:
-            raise ValueError("Ending balances must be whole dollars")
-        if not 0 <= value["ending_a"] <= 1_000_000 or not 0 <= value["ending_b"] <= 1_000_000:
-            raise ValueError("Ending balance is out of range")
         normalized[item.id] = dict(value)
     return normalized
 
@@ -147,7 +145,7 @@ def _validate_account_drafts(raw: object, current_index: int) -> dict[str, dict[
         if item.id not in raw:
             continue
         value = raw[item.id]
-        if not isinstance(value, dict) or set(value) - {"effect", "ending_a", "ending_b", "omission"}:
+        if not isinstance(value, dict) or set(value) - {"effect", "omission"}:
             raise ValueError("Invalid account draft")
         answer: dict[str, object] = {}
         if "effect" in value:
@@ -158,29 +156,24 @@ def _validate_account_drafts(raw: object, current_index: int) -> dict[str, dict[
             if value["omission"] not in item.omission_options:
                 raise ValueError("Unknown omission draft")
             answer["omission"] = value["omission"]
-        for key in ("ending_a", "ending_b"):
-            if key in value:
-                amount = value[key]
-                if type(amount) is not int or not 0 <= amount <= 1_000_000:
-                    raise ValueError("Invalid ending-balance draft")
-                answer[key] = amount
         normalized[item.id] = answer
     return normalized
 
 
-def _validate_statement_answers(raw: object, submitted: bool) -> dict[str, int]:
+def _validate_statement_answers(raw: object, submitted: bool) -> dict[str, str]:
     if not isinstance(raw, dict):
         raise ValueError("Statement answers must be an object")
-    valid_keys = [key for key, _ in STATEMENT_FIELDS]
+    valid_keys = [item.id for item in STATEMENT_QUESTIONS]
     if set(raw) - set(valid_keys):
-        raise ValueError("Unknown statement field")
+        raise ValueError("Unknown statement question")
     if submitted and set(raw) != set(valid_keys):
         raise ValueError("Submitted statement answers are incomplete")
     normalized = {}
-    for key, value in raw.items():
-        if type(value) is not int or not 0 <= value <= 10_000_000:
-            raise ValueError("Invalid statement amount")
-        normalized[key] = value
+    questions = {item.id: item for item in STATEMENT_QUESTIONS}
+    for item_id, value in raw.items():
+        if not isinstance(value, str) or value not in questions[item_id].options:
+            raise ValueError("Invalid statement answer")
+        normalized[item_id] = value
     return normalized
 
 
@@ -188,19 +181,22 @@ def _valid_score_keys() -> set[str]:
     keys = {f"recognition:{item.id}" for item in RECOGNITION_QUESTIONS}
     keys |= {f"classification:{item.id}" for item in ADJUSTMENT_ITEMS}
     keys |= {f"account:{item.id}" for item in ACCOUNT_CHALLENGES}
-    keys |= {f"statement:{key}" for key, _ in STATEMENT_FIELDS}
+    keys |= {f"statement:{item.id}" for item in STATEMENT_QUESTIONS}
     keys |= {f"integrity:{item.id}" for item in INTEGRITY_SCENARIOS}
     return keys
 
 
 def validate_snapshot(raw: object) -> dict[str, Any]:
-    expected_keys = {"v", "s", "dr", "ri", "rr", "ci", "cr", "ai", "ar", "sr", "ss", "ii", "ir", "at", "fp"}
+    expected_keys = {"v", "s", "z", "dr", "ri", "rr", "ci", "cr", "ai", "ar", "sr", "ss", "ii", "ir", "at", "fp"}
     if not isinstance(raw, dict) or set(raw) != expected_keys or raw["v"] != SNAPSHOT_VERSION:
         raise ValueError("Unsupported snapshot")
 
     stage = raw["s"]
     if type(stage) is not int or not 0 <= stage <= 5:
         raise ValueError("Invalid stage")
+    shuffle_seed = raw["z"]
+    if type(shuffle_seed) is not int or not 0 <= shuffle_seed < 2**63:
+        raise ValueError("Invalid shuffle seed")
 
     recognition = _answer_prefix(raw["rr"], RECOGNITION_QUESTIONS, lambda item: item.options)
     classification = _answer_prefix(raw["cr"], ADJUSTMENT_ITEMS, lambda _item: CLASSIFICATION_OPTIONS)
@@ -267,19 +263,14 @@ def validate_snapshot(raw: object) -> dict[str, Any]:
             answer = account[item.id]
             if not (
                 answer["effect"] == item.correct_effect
-                and answer["ending_a"] == item.ending_a
-                and answer["ending_b"] == item.ending_b
                 and answer["omission"] == item.correct_omission
             ):
                 raise ValueError("Account stage contains an unresolved answer")
     if stage >= 5 and not submitted:
         raise ValueError("Statement stage is incomplete")
     if stage >= 5:
-        from closing_time.engine import statement_values
-
-        expected_statements = statement_values()
-        if any(statements.get(key) != expected_statements[key] for key, _ in STATEMENT_FIELDS):
-            raise ValueError("Statement stage contains an unresolved amount")
+        if any(statements.get(item.id) != item.correct for item in STATEMENT_QUESTIONS):
+            raise ValueError("Statement stage contains an unresolved answer")
 
     for position, item in enumerate(RECOGNITION_QUESTIONS[: max(0, recognition_index)]):
         if recognition.get(item.id) != item.correct:
@@ -291,8 +282,6 @@ def validate_snapshot(raw: object) -> dict[str, Any]:
         answer = account.get(item.id)
         if answer is None or not (
             answer["effect"] == item.correct_effect
-            and answer["ending_a"] == item.ending_a
-            and answer["ending_b"] == item.ending_b
             and answer["omission"] == item.correct_omission
         ):
             raise ValueError("A prior account answer is unresolved")
@@ -311,6 +300,7 @@ def validate_snapshot(raw: object) -> dict[str, Any]:
 
     return {
         "ct_stage": stage,
+        "ct_shuffle_seed": shuffle_seed,
         "ct_drafts": drafts,
         "ct_recognition_index": recognition_index,
         "ct_recognition_responses": recognition,
@@ -331,6 +321,7 @@ def snapshot_from_state(state: MutableMapping[str, Any]) -> dict[str, Any]:
     return {
         "v": SNAPSHOT_VERSION,
         "s": state["ct_stage"],
+        "z": state["ct_shuffle_seed"],
         "dr": {
             "r": state["ct_drafts"]["recognition"],
             "c": state["ct_drafts"]["classification"],

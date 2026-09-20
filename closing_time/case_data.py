@@ -39,10 +39,17 @@ class AccountChallenge:
     account_b: str
     effect_options: tuple[str, ...]
     correct_effect: str
-    ending_a: int
-    ending_b: int
     omission_options: tuple[str, ...]
     correct_omission: str
+    explanation: str
+
+
+@dataclass(frozen=True)
+class StatementQuestion:
+    id: str
+    prompt: str
+    options: tuple[str, ...]
+    correct: str
     explanation: str
 
 
@@ -245,11 +252,12 @@ ADJUSTMENT_ITEMS = (
     ),
     AdjustmentItem(
         id="interest",
-        document="Lender statement",
-        title="Interest has accumulated",
+        document="Loan statement from the studio's lender",
+        title="The studio has incurred interest as a borrower",
         story=(
-            "$300 of loan interest accumulated during May and will be paid in "
-            "June. The May records do not yet include it."
+            "The studio is the borrower on a business loan. It incurred $300 of "
+            "interest during May that it will pay to the lender in June. The May "
+            "records do not yet include it."
         ),
         classification="Accrued expense",
         amount=300,
@@ -277,8 +285,6 @@ ACCOUNT_CHALLENGES = (
             "Neither account changes until the policy ends",
         ),
         correct_effect="Prepaid Insurance decreases $1,000; Insurance Expense increases $1,000",
-        ending_a=11_000,
-        ending_b=1_000,
         omission_options=(
             "Assets and net income would be overstated; expenses would be understated",
             "Assets and net income would be understated; expenses would be overstated",
@@ -304,8 +310,6 @@ ACCOUNT_CHALLENGES = (
             "Neither account changes until all three workshops are complete",
         ),
         correct_effect="Unearned Revenue decreases $6,000; Service Revenue increases $6,000",
-        ending_a=3_000,
-        ending_b=33_800,
         omission_options=(
             "Liabilities would be overstated; revenue and net income would be understated",
             "Liabilities would be understated; revenue and net income would be overstated",
@@ -332,8 +336,6 @@ ACCOUNT_CHALLENGES = (
             "Neither account changes until the client is billed",
         ),
         correct_effect="Accounts Receivable increases $3,800; Service Revenue increases $3,800",
-        ending_a=9_800,
-        ending_b=31_600,
         omission_options=(
             "Assets, revenue, and net income would be understated",
             "Assets, revenue, and net income would be overstated",
@@ -359,8 +361,6 @@ ACCOUNT_CHALLENGES = (
             "Neither account changes until payday",
         ),
         correct_effect="Salaries Expense increases $2,500; Salaries Payable increases $2,500",
-        ending_a=13_500,
-        ending_b=2_500,
         omission_options=(
             "Liabilities and expenses would be understated; net income would be overstated",
             "Liabilities and expenses would be overstated; net income would be understated",
@@ -375,14 +375,49 @@ ACCOUNT_CHALLENGES = (
 )
 
 
-STATEMENT_FIELDS = (
-    ("service_revenue", "Service Revenue"),
-    ("total_expenses", "Total Expenses"),
-    ("net_income", "Net Income"),
-    ("ending_retained_earnings", "Ending Retained Earnings"),
-    ("total_assets", "Total Assets"),
-    ("total_liabilities", "Total Liabilities"),
-    ("total_liabilities_equity", "Total Liabilities and Stockholders' Equity"),
+STATEMENT_QUESTIONS = (
+    StatementQuestion(
+        id="balanced_but_incomplete",
+        prompt="Why can the unadjusted accounting equation balance even though the May reports are incomplete?",
+        options=(
+            "A balanced equation proves every revenue and expense is in the correct period",
+            "Missing or outdated amounts can leave both sides equal while the financial story is still wrong",
+            "The accounting equation applies only after adjustments are recorded",
+        ),
+        correct="Missing or outdated amounts can leave both sides equal while the financial story is still wrong",
+        explanation=(
+            "Equality is a mathematical check, not proof that every May asset, liability, revenue, and expense "
+            "has been recognized in the correct period."
+        ),
+    ),
+    StatementQuestion(
+        id="statement_flow",
+        prompt="Which connection carries May's operating results into the adjusted balance sheet?",
+        options=(
+            "Net income flows into retained earnings, which is part of stockholders' equity",
+            "Total assets flow into service revenue, which becomes retained earnings",
+            "Cash flows directly into every revenue and expense account",
+        ),
+        correct="Net income flows into retained earnings, which is part of stockholders' equity",
+        explanation=(
+            "Revenue and expenses determine net income. Net income then increases retained earnings, linking "
+            "the income statement to stockholders' equity on the balance sheet."
+        ),
+    ),
+    StatementQuestion(
+        id="equation_effect",
+        prompt="Why does the accounting equation remain balanced after the adjustments?",
+        options=(
+            "Every adjustment changes cash by the same amount as net income",
+            "Adjustments change only income-statement accounts, so assets and liabilities stay fixed",
+            "Each adjustment has connected effects that keep assets equal to liabilities plus equity",
+        ),
+        correct="Each adjustment has connected effects that keep assets equal to liabilities plus equity",
+        explanation=(
+            "Each adjustment links an income-statement effect with an asset or liability effect. The related "
+            "change in net income ultimately changes retained earnings and equity."
+        ),
+    ),
 )
 
 
