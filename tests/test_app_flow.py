@@ -1,3 +1,4 @@
+import re
 import unittest
 
 from streamlit.testing.v1 import AppTest
@@ -14,6 +15,12 @@ from closing_time.progress import SNAPSHOT_PARAM, decode_snapshot
 
 def button(app: AppTest, label: str):
     return next(item for item in app.button if item.label == label)
+
+
+def assert_feedback_dollars_are_escaped(test_case: unittest.TestCase, app: AppTest) -> None:
+    for collection in (app.success, app.warning, app.info, app.caption):
+        for item in collection:
+            test_case.assertIsNone(re.search(r"(?<!\\)\$", str(item.value)), item.value)
 
 
 class PerfectCloseFlowTests(unittest.TestCase):
@@ -44,11 +51,13 @@ class PerfectCloseFlowTests(unittest.TestCase):
         for item in RECOGNITION_QUESTIONS:
             app.radio(key=f"widget_recognition_{item.id}").set_value(item.correct)
             button(app, "Check the reporting period").click().run()
+            assert_feedback_dollars_are_escaped(self, app)
             button(app, "Continue").click().run()
 
         for item in ADJUSTMENT_ITEMS:
             app.radio(key=f"widget_classification_{item.id}").set_value(item.classification)
             button(app, "Identify the transaction").click().run()
+            assert_feedback_dollars_are_escaped(self, app)
             button(app, "Continue").click().run()
 
         for item in ACCOUNT_CHALLENGES:
@@ -69,6 +78,7 @@ class PerfectCloseFlowTests(unittest.TestCase):
         for index, item in enumerate(INTEGRITY_SCENARIOS):
             app.radio(key=f"widget_integrity_{item.id}").set_value(item.correct)
             button(app, "Evaluate the proposal").click().run()
+            assert_feedback_dollars_are_escaped(self, app)
             if index < len(INTEGRITY_SCENARIOS) - 1:
                 button(app, "Continue").click().run()
 

@@ -235,10 +235,10 @@ def shuffled(items: tuple | list, salt: str) -> list:
     return ordered
 
 
-def escape_currency_markdown(value: str) -> str:
-    """Keep currency symbols from being interpreted as inline math."""
+def escape_dollar_markdown(value: object) -> str:
+    """Keep dollar signs in student-facing text from starting inline math."""
 
-    return value.replace("$", r"\$")
+    return str(value).replace("$", r"\$")
 
 
 def save_simple_draft(group: str, item_id: str, widget_key: str) -> None:
@@ -418,8 +418,8 @@ def render_recognition_stage() -> None:
     result = evaluate_recognition(item.id, response) if response is not None else None
     if result is None or not result["correct"]:
         if result is not None:
-            st.warning(f"Reconsider the timing. {result['explanation']}")
-            st.caption(f"The amount or period that belongs in May is: {result['expected']}.")
+            st.warning(escape_dollar_markdown(f"Reconsider the timing. {result['explanation']}"))
+            st.caption(escape_dollar_markdown(f"The amount or period that belongs in May is: {result['expected']}."))
             st.info("Change your choice below, then select Check revised answer.")
         draft = st.session_state.ct_drafts["recognition"].get(item.id)
         widget_key = f"widget_recognition_{item.id}"
@@ -430,6 +430,7 @@ def render_recognition_stage() -> None:
             key=widget_key,
             on_change=save_simple_draft,
             args=("recognition", item.id, widget_key),
+            format_func=escape_dollar_markdown,
         )
         button_label = "Check revised answer" if response is not None else "Check the reporting period"
         if st.button(button_label, type="primary", width="stretch"):
@@ -448,7 +449,7 @@ def render_recognition_stage() -> None:
                 )
                 st.rerun()
     else:
-        st.success(f"Correct. {result['explanation']}")
+        st.success(escape_dollar_markdown(f"Correct. {result['explanation']}"))
         st.button(
             "Continue",
             type="primary",
@@ -471,8 +472,12 @@ def render_classification_stage() -> None:
     result = evaluate_classification(item.id, response) if response is not None else None
     if result is None or not result["correct"]:
         if result is not None:
-            st.warning(f"Review the relationship between cash timing and recognition. {result['explanation']}")
-            st.caption(f"This evidence is classified as: {result['expected']}.")
+            st.warning(
+                escape_dollar_markdown(
+                    f"Review the relationship between cash timing and recognition. {result['explanation']}"
+                )
+            )
+            st.caption(escape_dollar_markdown(f"This evidence is classified as: {result['expected']}."))
             st.info("Change your choice below, then select Check revised answer.")
         draft = st.session_state.ct_drafts["classification"].get(item.id)
         widget_key = f"widget_classification_{item.id}"
@@ -501,7 +506,7 @@ def render_classification_stage() -> None:
                 )
                 st.rerun()
     else:
-        st.success(f"Correct: {result['expected']}. {result['explanation']}")
+        st.success(escape_dollar_markdown(f"Correct: {result['expected']}. {result['explanation']}"))
         st.button(
             "Continue",
             type="primary",
@@ -543,7 +548,7 @@ def render_account_stage() -> None:
         expected = result["expected"]
         render_feedback_row("Account directions", bool(checks["effect"]), str(expected["effect"]))
         render_feedback_row("Omission effect", bool(checks["omission"]), str(expected["omission"]))
-        st.info(str(result["explanation"]))
+        st.info(escape_dollar_markdown(result["explanation"]))
         if result["correct"]:
             st.button(
                 "Continue",
@@ -565,7 +570,7 @@ def render_account_stage() -> None:
         key=effect_key,
         on_change=save_account_draft,
         args=(item.id, "effect", effect_key),
-        format_func=escape_currency_markdown,
+        format_func=escape_dollar_markdown,
     )
     omission_options = shuffled(item.omission_options, f"account-omission:{item.id}")
     omission_key = f"widget_omission_{item.id}"
@@ -576,7 +581,7 @@ def render_account_stage() -> None:
         key=omission_key,
         on_change=save_account_draft,
         args=(item.id, "omission", omission_key),
-        format_func=escape_currency_markdown,
+        format_func=escape_dollar_markdown,
     )
     button_label = "Check revised account analysis" if response is not None else "Check the account ripple"
     if st.button(button_label, type="primary", width="stretch"):
@@ -809,10 +814,10 @@ def render_integrity_stage() -> None:
     result = evaluate_integrity(item.id, response) if response is not None else None
     if result is not None:
         if result["correct"]:
-            st.success(f"Sound judgment. {result['explanation']}")
+            st.success(escape_dollar_markdown(f"Sound judgment. {result['explanation']}"))
         else:
-            st.warning(f"This conclusion needs another look. {result['explanation']}")
-        st.info(f"Financial-statement effect: {result['statement_effect']}")
+            st.warning(escape_dollar_markdown(f"This conclusion needs another look. {result['explanation']}"))
+        st.info(escape_dollar_markdown(f"Financial-statement effect: {result['statement_effect']}"))
         if result["correct"]:
             button_label = "Complete the close" if index == len(INTEGRITY_SCENARIOS) - 1 else "Continue"
             st.button(
