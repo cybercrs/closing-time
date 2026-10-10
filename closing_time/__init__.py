@@ -1,0 +1,2 @@
+"""Closing Time learning activity."""
+

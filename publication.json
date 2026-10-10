@@ -1,0 +1,7 @@
+{
+  "repository": "cybercrs/closing-time",
+  "source_branch": "rollout/stlite-browser-navigation",
+  "source_commit": "f3e9ab6bbf6ad67f32673dce484f22a588269ae7",
+  "runtime": "stlite 1.8.1 / Streamlit 1.57.0 / Pyodide 0.29.3",
+  "hosted_browser_test": "not run; cloud proxy restriction respected"
+}
