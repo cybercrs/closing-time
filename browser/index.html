@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Closing Time — browser activity</title>
+    <link rel="stylesheet" href="./vendor/stlite.css">
+    <style>
+      #startup-notice { position: fixed; z-index: 10000; top: 1rem; right: 1rem; max-width: 30rem; padding: 1rem; border: 1px solid #ccd3db; border-radius: .5rem; background: #fff; color: #20324c; font: 1rem/1.5 system-ui, sans-serif; box-shadow: 0 4px 20px #20324c18; }
+      #startup-notice[hidden], #startup-retry[hidden] { display: none; }
+      #startup-retry { min-height: 44px; padding: .5rem 1rem; border: 1px solid #66768e; border-radius: .3rem; background: #fff; color: #20324c; cursor: pointer; font: inherit; }
+      #startup-retry:focus-visible { outline: 2px solid #0759bf; outline-offset: 2px; }
+      @media (max-width: 480px) { #startup-notice { left: 1rem; max-width: none; } }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <aside id="startup-notice" role="status" aria-live="polite">
+      <p id="startup-message">Opening Closing Time. The first visit downloads the browser runtime and may take a minute.</p>
+      <button id="startup-retry" type="button" hidden>Retry loading</button>
+    </aside>
+    <noscript>This activity needs JavaScript and WebAssembly enabled.</noscript>
+    <script type="module">
+      const notice = document.getElementById("startup-notice");
+      const message = document.getElementById("startup-message");
+      const retry = document.getElementById("startup-retry");
+      // Reload the current address. Never clear, replace or reconstruct progress.
+      retry.addEventListener("click", () => window.location.reload());
+      const offerRetry = text => {
+        notice.hidden = false;
+        message.textContent = text;
+        retry.hidden = false;
+      };
+      const startupTimer = window.setTimeout(() => offerRetry("This is taking longer than expected. You can keep waiting or retry loading. Work saved in this address will be kept."), 60000);
+      const ready = () => {
+        if (document.querySelector(".st-key-browser_back button")) {
+          window.clearTimeout(startupTimer);
+          notice.hidden = true;
+          observer.disconnect();
+        }
+      };
+      const observer = new MutationObserver(ready);
+      observer.observe(document.getElementById("root"), {childList: true, subtree: true});
+      try {
+        const { mount } = await import("./vendor/stlite.js");
+        const response = await fetch("./app.json");
+        if (!response.ok) throw new Error("Application files unavailable");
+        const config = await response.json();
+        config.pyodideUrl = new URL(config.pyodideUrl, window.location.href).href;
+        config.requirements = config.requirements.map(url => new URL(url, window.location.href).href);
+        const activity = mount(config, document.getElementById("root"));
+        activity._kernel.addEventListener("loadError", () => {
+          window.clearTimeout(startupTimer);
+          offerRetry("The activity could not load. Check your connection and retry. Work saved in this address will be kept.");
+        });
+        ready();
+      } catch (error) {
+        window.clearTimeout(startupTimer);
+        offerRetry("The activity could not load. Check your connection and retry. Work saved in this address will be kept.");
+      }
+    </script>
+  </body>
+</html>

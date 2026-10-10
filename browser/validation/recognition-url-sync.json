@@ -1,0 +1,74 @@
+{
+  "observed_assertion": {
+    "before": {
+      "progress": "eNqFjTEOAiEURO8ysaQABHS5jCHIKomCAbRws3cXBCtjbHj5YWbeAuOhKYFJ0MtaWSqRnI2n4IuPQfuQ78kE6w7XGMoZmtWY7S07WsdGmH7YDt_x_vnawIYRSilqILdc5Xz7a57NJbs23e1-2FM_0y_VR8PqOyo5jzWCB7QgeELvlZg4mxQXSnK23Skp1xdgAVm8"
+    },
+    "after": {
+      "progress": "eNqNjT0OAiEUhO8ysaQABHS5jCHIKomCAdbCzd5dEDoLbd6XyZufFcZDUwKToNetslQiORsvwRcfg_YhL8kE6073GMoVmleb7Sk7UudGmC5sh-_4fL46sGOEUopqyM1XOT9-Ls_mll2r7ut-rKcu0z9TrN4Ry3k0EjyhBcEL-qjExNmkuFCSs_1BSbm9AbjbWno",
+      "view": "0"
+    }
+  },
+  "decoded_previous_url": {
+    "ct_stage": 1,
+    "ct_shuffle_seed": 8649219624652137655,
+    "ct_drafts": {
+      "recognition": {
+        "insurance_month": "$1,000"
+      },
+      "classification": {},
+      "account": {},
+      "statement": {},
+      "integrity": {}
+    },
+    "ct_recognition_index": 0,
+    "ct_recognition_responses": {
+      "insurance_month": "$0"
+    },
+    "ct_classification_index": 0,
+    "ct_classification_responses": {},
+    "ct_account_index": 0,
+    "ct_account_responses": {},
+    "ct_statement_responses": {},
+    "ct_statement_submitted": false,
+    "ct_integrity_index": 0,
+    "ct_integrity_responses": {},
+    "ct_attempts": {
+      "recognition:insurance_month": 1
+    },
+    "ct_first_pass": {
+      "recognition:insurance_month": false
+    }
+  },
+  "decoded_later_url": {
+    "ct_stage": 1,
+    "ct_shuffle_seed": 8649219624652137655,
+    "ct_drafts": {
+      "recognition": {
+        "insurance_month": "$1,000"
+      },
+      "classification": {},
+      "account": {},
+      "statement": {},
+      "integrity": {}
+    },
+    "ct_recognition_index": 0,
+    "ct_recognition_responses": {
+      "insurance_month": "$1,000"
+    },
+    "ct_classification_index": 0,
+    "ct_classification_responses": {},
+    "ct_account_index": 0,
+    "ct_account_responses": {},
+    "ct_statement_responses": {},
+    "ct_statement_submitted": false,
+    "ct_integrity_index": 0,
+    "ct_integrity_responses": {},
+    "ct_attempts": {
+      "recognition:insurance_month": 2
+    },
+    "ct_first_pass": {
+      "recognition:insurance_month": false
+    }
+  },
+  "interpretation": "The later URL contains the previously submitted correct recognition revision and second attempt. The review page is the briefing, which has no answer submission path. Submission URL synchronization was added to the test harness; lesson code is unchanged."
+}

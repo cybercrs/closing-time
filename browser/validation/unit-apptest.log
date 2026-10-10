@@ -1,0 +1,68 @@
+test_complete_close_reaches_debrief_without_accounting_mechanics (test_app_flow.PerfectCloseFlowTests.test_complete_close_reaches_debrief_without_accounting_mechanics) ... 2026-10-10 17:37:31.378 WARNING streamlit.runtime.scriptrunner_utils.script_run_context: Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.
+ok
+test_draft_restores_and_wrong_answer_revises_in_one_check (test_app_flow.PerfectCloseFlowTests.test_draft_restores_and_wrong_answer_revises_in_one_check) ... 2026-10-10 17:37:36.289 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.
+ok
+test_complete_close_reaches_debrief_without_accounting_mechanics (test_browser_flow.PerfectCloseFlowTests.test_complete_close_reaches_debrief_without_accounting_mechanics) ... 2026-10-10 17:37:36.948 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.
+2026-10-10 17:37:37.286 The widget with key "widget_recognition_insurance_month" was created with a default value but also had its value set via the Session State API.
+Stack (most recent call last):
+  File "/workspace/.cloud-setup/python/cpython-3.12.11-linux-x86_64-gnu/lib/python3.12/threading.py", line 1032, in _bootstrap
+    self._bootstrap_inner()
+  File "/workspace/.cloud-setup/python/cpython-3.12.11-linux-x86_64-gnu/lib/python3.12/threading.py", line 1075, in _bootstrap_inner
+    self.run()
+  File "/workspace/.cloud-setup/python/cpython-3.12.11-linux-x86_64-gnu/lib/python3.12/threading.py", line 1012, in run
+    self._target(*self._args, **self._kwargs)
+  File "/workspace/.cloud-setup/venvs/main/lib/python3.12/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 418, in _run_script_thread
+    self._run_script(request.rerun_data)
+  File "/workspace/.cloud-setup/venvs/main/lib/python3.12/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 832, in _run_script
+    ) = exec_func_with_error_handling(code_to_exec, ctx)
+  File "/workspace/.cloud-setup/venvs/main/lib/python3.12/site-packages/streamlit/runtime/scriptrunner/exec_code.py", line 129, in exec_func_with_error_handling
+    result = func()
+  File "/workspace/.cloud-setup/venvs/main/lib/python3.12/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 807, in code_to_exec
+    exec(code, module.__dict__)  # noqa: S102
+  File "/tmp/browser-apptest-orxj504r/app.py", line 63, in <module>
+    app[renderers[stage]]()
+  File "/tmp/browser-apptest-orxj504r/shared_app.py", line 426, in render_recognition_stage
+    selected = st.radio(
+  File "/workspace/closing-time/browser/common.py", line 30, in widget
+    value = command(*args, **kwargs)
+  File "/workspace/.cloud-setup/venvs/main/lib/python3.12/site-packages/streamlit/runtime/metrics_util.py", line 568, in wrapped_func
+    result = non_optional_func(*args, **kwargs)
+  File "/workspace/.cloud-setup/venvs/main/lib/python3.12/site-packages/streamlit/elements/widgets/radio.py", line 420, in radio
+    return self._radio(
+  File "/workspace/.cloud-setup/venvs/main/lib/python3.12/site-packages/streamlit/elements/widgets/radio.py", line 463, in _radio
+    check_widget_policies(
+  File "/workspace/.cloud-setup/venvs/main/lib/python3.12/site-packages/streamlit/elements/lib/policies.py", line 143, in check_widget_policies
+    check_session_state_rules(
+  File "/workspace/.cloud-setup/venvs/main/lib/python3.12/site-packages/streamlit/elements/lib/policies.py", line 89, in check_session_state_rules
+    _LOGGER.warning(
+ok
+test_draft_restores_and_wrong_answer_revises_in_one_check (test_browser_flow.PerfectCloseFlowTests.test_draft_restores_and_wrong_answer_revises_in_one_check) ... 2026-10-10 17:37:38.963 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.
+ok
+test_move_changes_only_view (test_browser_navigation.BrowserNavigationTests.test_move_changes_only_view) ... ok
+test_review_refresh_and_future_view (test_browser_navigation.BrowserNavigationTests.test_review_refresh_and_future_view) ... 2026-10-10 17:37:39.432 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.
+2026-10-10 17:37:39.865 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.
+ok
+test_acceptable_integrity_choice_explains_why (test_engine.ClosingCalculationTests.test_acceptable_integrity_choice_explains_why) ... ok
+test_account_challenges_check_direction_balance_and_omission_effect (test_engine.ClosingCalculationTests.test_account_challenges_check_direction_balance_and_omission_effect) ... ok
+test_all_adjusted_balances_and_statement_totals (test_engine.ClosingCalculationTests.test_all_adjusted_balances_and_statement_totals) ... ok
+test_case_covers_all_four_adjustment_classes (test_engine.ClosingCalculationTests.test_case_covers_all_four_adjustment_classes) ... ok
+test_currency_format_places_minus_sign_before_symbol (test_engine.ClosingCalculationTests.test_currency_format_places_minus_sign_before_symbol) ... ok
+test_each_adjustment_connects_one_balance_sheet_and_one_income_statement_account (test_engine.ClosingCalculationTests.test_each_adjustment_connects_one_balance_sheet_and_one_income_statement_account) ... ok
+test_integrity_round_includes_transparent_and_misleading_choices (test_engine.ClosingCalculationTests.test_integrity_round_includes_transparent_and_misleading_choices) ... ok
+test_interest_evidence_identifies_the_studio_as_borrower (test_engine.ClosingCalculationTests.test_interest_evidence_identifies_the_studio_as_borrower) ... ok
+test_statement_questions_check_conceptual_connections (test_engine.ClosingCalculationTests.test_statement_questions_check_conceptual_connections) ... ok
+test_student_case_language_avoids_unassigned_mechanics (test_engine.ClosingCalculationTests.test_student_case_language_avoids_unassigned_mechanics) ... ok
+test_unadjusted_records_balance_but_are_incomplete (test_engine.ClosingCalculationTests.test_unadjusted_records_balance_but_are_incomplete) ... ok
+test_current_incorrect_response_can_be_restored_for_revision (test_progress.ProgressSnapshotTests.test_current_incorrect_response_can_be_restored_for_revision) ... ok
+test_incorrect_completed_statement_stage_is_rejected (test_progress.ProgressSnapshotTests.test_incorrect_completed_statement_stage_is_rejected) ... ok
+test_malformed_or_oversized_tokens_are_rejected (test_progress.ProgressSnapshotTests.test_malformed_or_oversized_tokens_are_rejected) ... ok
+test_restore_and_reset (test_progress.ProgressSnapshotTests.test_restore_and_reset) ... ok
+test_round_trip_completed_progress (test_progress.ProgressSnapshotTests.test_round_trip_completed_progress) ... ok
+test_score_summary_tracks_first_pass_and_revisions (test_progress.ProgressSnapshotTests.test_score_summary_tracks_first_pass_and_revisions) ... ok
+test_skipping_a_required_stage_is_rejected (test_progress.ProgressSnapshotTests.test_skipping_a_required_stage_is_rejected) ... ok
+test_unsubmitted_drafts_survive_refresh (test_progress.ProgressSnapshotTests.test_unsubmitted_drafts_survive_refresh) ... ok
+
+----------------------------------------------------------------------
+Ran 25 tests in 8.794s
+
+OK

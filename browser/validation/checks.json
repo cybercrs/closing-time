@@ -1,0 +1,23 @@
+{
+  "repository": "cybercrs/closing-time",
+  "unit_and_apptest": {
+    "passed": 25,
+    "runtime": "Python 3.12.11 / server Streamlit 1.60.0"
+  },
+  "browser": {
+    "passed": 14,
+    "runtime": {
+      "python": "3.13.2",
+      "streamlit": "1.57.0",
+      "pyodide": "0.29.3"
+    },
+    "transport": "local static Chromium/Wasm; all external requests blocked",
+    "distinct_checks": 13
+  },
+  "syntax": "passed",
+  "lint": "not configured in repository; no lint command supplied",
+  "build": "passed; archive integrity and all 39 asset hashes verified",
+  "hosted_browser": "not run; known cybercrs.github.io proxy restriction respected",
+  "classroom_capacity": "not measured",
+  "pages_activation": "required; has_pages false verified before rollout"
+}

@@ -1,0 +1,181 @@
+{
+  "url": "http://127.0.0.1:41681",
+  "transport": "actual local static stlite/Wasm; external requests blocked",
+  "checks": [
+    {
+      "name": "Actual stlite/Streamlit/Pyodide runtime and initial navigation",
+      "status": "passed"
+    },
+    {
+      "name": "Review refresh, bookmark and future-view rejection preserve canonical work",
+      "status": "passed"
+    },
+    {
+      "name": "Read-only repeat review leaves progress, answers and scores unchanged",
+      "status": "passed"
+    },
+    {
+      "name": "Recognition required answer, wrong attempt, refresh and one-check revision",
+      "status": "passed"
+    },
+    {
+      "name": "Full close, statement revision, integrity mastery and original first-pass accounting",
+      "status": "passed"
+    },
+    {
+      "name": "Complete lesson, every reached review page, keyboard focus and refresh",
+      "status": "passed"
+    },
+    {
+      "name": "Independent tab and reset replace progress without changing old bookmarks",
+      "status": "passed"
+    },
+    {
+      "name": "Narrow viewport: accessible boxed 44px arrows aligned at upper right",
+      "status": "passed"
+    },
+    {
+      "name": "Subdirectory paths, runtime assets and refresh",
+      "status": "passed"
+    },
+    {
+      "name": "Malformed progress and future view reset to a fresh lesson",
+      "status": "passed"
+    },
+    {
+      "name": "Visible loading error and keyboard Retry retain the exact completed bookmark",
+      "status": "passed"
+    },
+    {
+      "name": "No external requests, server connection or runtime errors",
+      "status": "passed"
+    },
+    {
+      "name": "Walkthrough stopped",
+      "status": "failed",
+      "error": "Traceback (most recent call last):\n  File \"/workspace/closing-time/browser/test_browser.py\", line 349, in main\n    lesson(h)\n  File \"/tmp/check_closing_style.py\", line 35, in visual\n    h.click('Start over',True);h.view(0)\n    ^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/workspace/closing-time/browser/test_browser.py\", line 72, in click\n    loc.get_by_role('button', name=label, exact=True).click()\n  File \"/workspace/.cloud-setup/venvs/main/lib/python3.12/site-packages/playwright/sync_api/_generated.py\", line 17876, in click\n    self._sync(\n  File \"/workspace/.cloud-setup/venvs/main/lib/python3.12/site-packages/playwright/_impl/_sync_base.py\", line 115, in _sync\n    return task.result()\n           ^^^^^^^^^^^^^\n  File \"/workspace/.cloud-setup/venvs/main/lib/python3.12/site-packages/playwright/_impl/_locator.py\", line 165, in click\n    return await self._frame._click(self._selector, strict=True, **params)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/workspace/.cloud-setup/venvs/main/lib/python3.12/site-packages/playwright/_impl/_frame.py\", line 593, in _click\n    await self._channel.send(\"click\", self._timeout, locals_to_params(locals()))\n  File \"/workspace/.cloud-setup/venvs/main/lib/python3.12/site-packages/playwright/_impl/_connection.py\", line 76, in send\n    return await self._connection.wrap_api_call(\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/workspace/.cloud-setup/venvs/main/lib/python3.12/site-packages/playwright/_impl/_connection.py\", line 632, in wrap_api_call\n    raise rewrite_error(error, f\"{parsed_st['apiName']}: {error}\") from None\nplaywright._impl._errors.TimeoutError: Locator.click: Timeout 30000ms exceeded.\nCall log:\n  - waiting for locator(\"[data-testid=\\\"stSidebar\\\"]\").get_by_role(\"button\", name=\"Start over\", exact=True)\n    - locator resolved to <button aria-label=\"\" kind=\"secondary\" data-testid=\"stBaseButton-secondary\" class=\"st-aipbveeh-tiy6dw ef3psqc22\">\u2026</button>\n  - attempting click action\n    2 \u00d7 waiting for element to be visible, enabled and stable\n      - element is visible, enabled and stable\n      - scrolling into view if needed\n      - done scrolling\n      - element is outside of the viewport\n    - retrying click action\n    - waiting 20ms\n    2 \u00d7 waiting for element to be visible, enabled and stable\n      - element is visible, enabled and stable\n      - scrolling into view if needed\n      - done scrolling\n      - element is outside of the viewport\n    - retrying click action\n      - waiting 100ms\n    57 \u00d7 waiting for element to be visible, enabled and stable\n       - element is visible, enabled and stable\n       - scrolling into view if needed\n       - done scrolling\n       - element is outside of the viewport\n     - retrying click action\n       - waiting 500ms\n\n"
+    }
+  ],
+  "page_errors": [],
+  "console_errors": [],
+  "external_requests": [],
+  "runtime": {
+    "python": "3.13.2",
+    "streamlit": "1.57.0",
+    "pyodide": "0.29.3"
+  },
+  "initial_render_seconds": 36.63,
+  "navigation_layout": {
+    "desktop": [
+      {
+        "x": 1044,
+        "y": 334.546875,
+        "width": 44,
+        "height": 44
+      },
+      {
+        "x": 1096,
+        "y": 334.546875,
+        "width": 44,
+        "height": 44
+      }
+    ]
+  },
+  "segments": "Lesson and state QA completed in three recorded segments. Original APP_CSS restored after final screenshot review; this additional pass checked every styled review page, canonical invariants, keyboard focus, reset and 390px layout. Lesson modules unchanged.",
+  "completion_bookmark": "http://127.0.0.1:41681/?progress=eNrtV01v3DgM_SuCsEAvPiSTzLR1TgXawwLbomjRs8Gx6bEajeSV5JmdFv3vS1kefyqTFigWaDenJH4U-Ug9kspXDoKnNwkHw9OvXCjbGFA5ZkbUtUT_DcsSc8dT_t5gDaJgf56NWIG5QbBo2R_XydXV1d0Ie_NPjcoiE2pqwxOu98JaoRX5fGUtOstAFUyh88Z6j-yoG1mwLTJ9QGMdOCzuGAaHdkAbVZxh_i3hjdoKKbGIcX-V57pRFOkD5igOsJUTZjfJC8_-I5qDIO4f8ICqWVrEuCfMBOvkwSxmPI-wQxsj-REkGEHRIrVbJeuW4dnkPZzmSbQmU4p_CaCaCOdPeHYXa3j3yBW03LW5t5WuY_Q_KQSjsOjLN5LHJsjjQoE3S3GM2Ucl0VX--wpP7MF5whC0kC7Ffp304EJMI2x6gWNgXh3CcgmUTylycJTVEDQOOjRoXQyzDbmkSsSwM9kY1pKNAh3ZAPrQOyPcKc2hFg6k-EJ18Q1vZniBEk7Z4HZAykbKrMBaW-FmkKOcbQ0Glct2IFQLG8z1TomWTXcsCxJawMNd7bVyFU9XU7y_LhsUtnDQKD-7RrRbWeyJT7qlniLPRbZtXNZKiO7OYRtjsMK_m7Zu2VnvEx_9b1kp9ZFAUltOk3VNP6aTlXT9Gks0Bvt25KFS4eb9qDLNBByuPnZ0uPz-aNcXvJs1Uaej6x-8ng8S-6KlDU9b4Wkr_OZbIf8l-1N41pFZzd9px2ghYe1aKWwxh8arxjFfQ5-2ZW_hRCEmk_wHzk3n_A8cXG4Bn3jkoLCsBOEqH-lEWdfadFJrp9J8WfBeJ4s9wfv5slwRPLCarob2IwWyPtCDq4G_9XpUO6YN040rvJgY7MM0yUExiXCglLSrmBUFVcDvD8mOlaBMXYWsFIpcC_pmnTYnn7J1RJAdjVY7orVYOPwN5BWD4nNjnV81rAKKpZUi1EunNbPkHBy7R6wZhDEaIjvN5Khzatm0CC1nPlpk3fri74a-8V8s_UEODDq6NR-LCk_Z05ijhIgUkadrdUyXPpv8vtLS99izcwTfZmV9-fHlqAEuvL-m8HRazrD5NArwww-xB_Bzx0fhoeej8ND0UbjTWhwbGj_gF59mc5NJT8_BaePO0WV3BotLz7SlxaIDS5AWH3utLf1MuzLg3_Fm66JdeLfNXc2173E_X8P_xcL8T-dsSN_8l_OWHsvWPI3dnzh2KUTfPAee3ib8C09fbG5frq5fbla3m_Xq-ub5Zr3-9i9mfncd&view=19",
+  "body_on_failure": "Closing Time\n\nReporting date: May 31\n\nStart over\n\nMONTH-END REPORTING CASE\nClosing Time\n\n5:00 p.m. on May 31.\nThe reports are due tomorrow. Use the evidence to show what really happened this month.\n\nPage 20 of 20\n\nBack\n\nForward\n\nBrief\n1. Timing\n2. Evidence\n3. Account ripple\n4. Statements\n5. Integrity\nSTEP 5 OF THE REASONING CHAIN\nProtect the financial story\n\nManagement wants strong results. Decide whether each proposal still gives users a faithful picture of May.\n\nClose complete. Every recognition decision, account change, statement connection, and reporting judgment has been resolved.\n\n3/4\nTiming first pass\n6/6\nTransaction type first pass\n4/4\nAccount ripple first pass\n2/3\nStatement connections first pass\n4/4\nIntegrity first pass\n\nFirst-pass decisions: 19 of 21 | Practice revisions used: 2 | Final mastery: complete\n\nThe complete month-end reporting chain\nIdentify when the economic activity occurred.\nDecide whether cash came before or after recognition.\nClassify the type of accrual accounting transaction.\nDetermine how the affected accounts increase or decrease and what would be misstated if the transaction were omitted.\nCompare unadjusted and adjusted balances, then trace the effect through net income, retained earnings, and the accounting equation.\nReject changes that make the reporting period look better by making it less faithful.\nDebrief with your team\nWhich item was most tempting to treat as a cash-basis event?\nWhich omitted adjustment changed the financial story most dramatically?\nWhy can a company have balanced financial statements that are still incomplete or misleading?\n\nStart over\n\nForward: review the next reached page. Use the activity controls on your current page.",
+  "static_requests": [
+    "/",
+    "/?progress=eNrtV01v3DgM_SuCsEAvPiSTzLR1TgXawwLbomjRs8Gx6bEajeSV5JmdFv3vS1kefyqTFigWaDenJH4U-Ug9kspXDoKnNwkHw9OvXCjbGFA5ZkbUtUT_DcsSc8dT_t5gDaJgf56NWIG5QbBo2R_XydXV1d0Ie_NPjcoiE2pqwxOu98JaoRX5fGUtOstAFUyh88Z6j-yoG1mwLTJ9QGMdOCzuGAaHdkAbVZxh_i3hjdoKKbGIcX-V57pRFOkD5igOsJUTZjfJC8_-I5qDIO4f8ICqWVrEuCfMBOvkwSxmPI-wQxsj-REkGEHRIrVbJeuW4dnkPZzmSbQmU4p_CaCaCOdPeHYXa3j3yBW03LW5t5WuY_Q_KQSjsOjLN5LHJsjjQoE3S3GM2Ucl0VX--wpP7MF5whC0kC7Ffp304EJMI2x6gWNgXh3CcgmUTylycJTVEDQOOjRoXQyzDbmkSsSwM9kY1pKNAh3ZAPrQOyPcKc2hFg6k-EJ18Q1vZniBEk7Z4HZAykbKrMBaW-FmkKOcbQ0Glct2IFQLG8z1TomWTXcsCxJawMNd7bVyFU9XU7y_LhsUtnDQKD-7RrRbWeyJT7qlniLPRbZtXNZKiO7OYRtjsMK_m7Zu2VnvEx_9b1kp9ZFAUltOk3VNP6aTlXT9Gks0Bvt25KFS4eb9qDLNBByuPnZ0uPz-aNcXvJs1Uaej6x-8ng8S-6KlDU9b4Wkr_OZbIf8l-1N41pFZzd9px2ghYe1aKWwxh8arxjFfQ5-2ZW_hRCEmk_wHzk3n_A8cXG4Bn3jkoLCsBOEqH-lEWdfadFJrp9J8WfBeJ4s9wfv5slwRPLCarob2IwWyPtCDq4G_9XpUO6YN040rvJgY7MM0yUExiXCglLSrmBUFVcDvD8mOlaBMXYWsFIpcC_pmnTYnn7J1RJAdjVY7orVYOPwN5BWD4nNjnV81rAKKpZUi1EunNbPkHBy7R6wZhDEaIjvN5Khzatm0CC1nPlpk3fri74a-8V8s_UEODDq6NR-LCk_Z05ijhIgUkadrdUyXPpv8vtLS99izcwTfZmV9-fHlqAEuvL-m8HRazrD5NArwww-xB_Bzx0fhoeej8ND0UbjTWhwbGj_gF59mc5NJT8_BaePO0WV3BotLz7SlxaIDS5AWH3utLf1MuzLg3_Fm66JdeLfNXc2173E_X8P_xcL8T-dsSN_8l_OWHsvWPI3dnzh2KUTfPAee3ib8C09fbG5frq5fbla3m_Xq-ub5Zr3-9i9mfncd&view=19",
+    "/app.json",
+    "/bootstrap-wheels.json",
+    "/favicon.ico",
+    "/pyodide-loader.mjs",
+    "/vendor/Button-CtzCBW58-AMXk3Whn.js",
+    "/vendor/DataFrame-ZHi5iyDV-BYXp5O6Z.js",
+    "/vendor/FileDownload.esm-DA6EBJWo-Bi9VuX1R.js",
+    "/vendor/IFrame-DRaylZUz-CTXRbjvJ.js",
+    "/vendor/IFrameUtil-BYTcNZ4E-B8B2FnkH.js",
+    "/vendor/Metric-SKreeL3S-CArHHqUv.js",
+    "/vendor/Progress-DGYWLpfg-CZfJvHCp.js",
+    "/vendor/ProgressBar-DhIwITyC-Bx_UJI5A.js",
+    "/vendor/WidgetLabelHelpIconInline-BTmzKeRa-CZ4j9Xyg.js",
+    "/vendor/_baseAssignValue-CvLdsscI-DZvAeBHf.js",
+    "/vendor/_baseIndexOf-OsCSwRmV-C7GT7Z0T.js",
+    "/vendor/assertThisInitialized-C1dAyb4j-jFURGdZo.js",
+    "/vendor/assets/1b1a876c211e4f13.wasm",
+    "/vendor/assets/512f7db3dabc21be.woff2",
+    "/vendor/assets/aec331590fac9222.woff2",
+    "/vendor/checkbox-BlFkpHIT-CZhSzhvC.js",
+    "/vendor/createDownloadLinkElement-CnWgptKS-D3FE3dhN.js",
+    "/vendor/createSuper-DfsXhqeB-ygQJQAOQ.js",
+    "/vendor/embed-C21m9f7b-ByOdo_l6.js",
+    "/vendor/formatMoment-DEtsTHwA-C3SDegV0.js",
+    "/vendor/formatNumber-B9NmJPl4-CfTaoV6j.js",
+    "/vendor/iconPosition-Cpqwt3HE-C-jUvRPi.js",
+    "/vendor/index-B7jxgHEF-DSFM4mVH.js",
+    "/vendor/index-CVld_lKx-BpaiPOLH.js",
+    "/vendor/index-DINISCAW-DhRXH5fW.js",
+    "/vendor/index-DZZFubxH-BwjJPHKd.js",
+    "/vendor/index-Df-1Z3LJ-BbKzDPIK.js",
+    "/vendor/index-Dk9oWC2N-BsV_n44Y.js",
+    "/vendor/index-Dl4ETd_L-D2oMd1k2.js",
+    "/vendor/index-DmoOfsTG-S0rBU7b4.js",
+    "/vendor/moment-C29_LcvN-Dw52XTOQ.js",
+    "/vendor/numbro-CDdPhOTG-MkRfyTGH.js",
+    "/vendor/pandasStylerUtils-lPQUevWP-DEF4qf3G.js",
+    "/vendor/possibleConstructorReturn-BHiKHPYz-Bnf-j7Fb.js",
+    "/vendor/pyodide/altair-6.0.0-py3-none-any.whl",
+    "/vendor/pyodide/anyio-4.9.0-py3-none-any.whl",
+    "/vendor/pyodide/attrs-25.2.0-py3-none-any.whl",
+    "/vendor/pyodide/cachetools-5.5.2-py3-none-any.whl",
+    "/vendor/pyodide/cramjam-2.10.0rc1-cp313-cp313-pyodide_2025_0_wasm32.whl",
+    "/vendor/pyodide/fastparquet-2024.11.0-cp313-cp313-pyodide_2025_0_wasm32.whl",
+    "/vendor/pyodide/fsspec-2025.3.2-py3-none-any.whl",
+    "/vendor/pyodide/jinja2-3.1.6-py3-none-any.whl",
+    "/vendor/pyodide/jsonschema-4.23.0-py3-none-any.whl",
+    "/vendor/pyodide/jsonschema_specifications-2024.10.1-py3-none-any.whl",
+    "/vendor/pyodide/libopenssl-1.1.1w.zip",
+    "/vendor/pyodide/markupsafe-3.0.2-cp313-cp313-pyodide_2025_0_wasm32.whl",
+    "/vendor/pyodide/micropip-0.11.0-py3-none-any.whl",
+    "/vendor/pyodide/narwhals-2.15.0-py3-none-any.whl",
+    "/vendor/pyodide/numpy-2.2.5-cp313-cp313-pyodide_2025_0_wasm32.whl",
+    "/vendor/pyodide/packaging-24.2-py3-none-any.whl",
+    "/vendor/pyodide/pandas-2.3.3-cp313-cp313-pyodide_2025_0_wasm32.whl",
+    "/vendor/pyodide/pillow-11.3.0-cp313-cp313-pyodide_2025_0_wasm32.whl",
+    "/vendor/pyodide/pyodide-lock.json",
+    "/vendor/pyodide/pyodide.asm.js",
+    "/vendor/pyodide/pyodide.asm.wasm",
+    "/vendor/pyodide/pyodide.mjs",
+    "/vendor/pyodide/pyodide_http-0.2.2-py3-none-any.whl",
+    "/vendor/pyodide/pyrsistent-0.20.0-cp313-cp313-pyodide_2025_0_wasm32.whl",
+    "/vendor/pyodide/python_dateutil-2.9.0.post0-py2.py3-none-any.whl",
+    "/vendor/pyodide/python_stdlib.zip",
+    "/vendor/pyodide/pytz-2025.2-py2.py3-none-any.whl",
+    "/vendor/pyodide/referencing-0.36.2-py3-none-any.whl",
+    "/vendor/pyodide/rpds_py-0.30.0-cp313-cp313-pyodide_2025_0_wasm32.whl",
+    "/vendor/pyodide/six-1.17.0-py2.py3-none-any.whl",
+    "/vendor/pyodide/sniffio-1.3.1-py3-none-any.whl",
+    "/vendor/pyodide/ssl-1.0.0-cp313-cp313-pyodide_2025_0_wasm32.whl",
+    "/vendor/pyodide/starlette-0.47.2-py3-none-any.whl",
+    "/vendor/pyodide/typing_extensions-4.15.0-py3-none-any.whl",
+    "/vendor/python/blinker-1.9.0-py3-none-any.whl",
+    "/vendor/python/itsdangerous-2.2.0-py3-none-any.whl",
+    "/vendor/python/protobuf-7.36.2-py3-none-any.whl",
+    "/vendor/python/python_multipart-0.0.32-py3-none-any.whl",
+    "/vendor/python/tenacity-9.2.1-py3-none-any.whl",
+    "/vendor/reactJsonViewCompat-BZlB_0r4-BAr45JB0.js",
+    "/vendor/resolveDefaultExport-Cy5TTESD-CcwO08HL.js",
+    "/vendor/sprintfjs-pgmg3ABV-CZ4af2dB.js",
+    "/vendor/stlite.css",
+    "/vendor/stlite.js",
+    "/vendor/styled-components-BDZ1Vzrp-C65H8d9R.js",
+    "/vendor/threshold-F1JftlUw-Dpm01mWO.js",
+    "/vendor/timer-ChR2a-4D-CgvgGXZ7.js",
+    "/vendor/toConsumableArray-8hd4ivs--BcltBJ_c.js",
+    "/vendor/value-YcFXbvJe-DIeu1yzI.js",
+    "/vendor/wheels/stlite_lib-0.1.0-py3-none-any.whl",
+    "/vendor/wheels/streamlit-1.57.0-cp313-none-any.whl",
+    "/vendor/withFullScreenWrapper-tGGSjEWy-DoekoEMQ.js"
+  ]
+}

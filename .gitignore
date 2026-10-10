@@ -4,3 +4,7 @@ __pycache__/
 *.py[cod]
 .pytest_cache/
 
+
+browser/dist/
+browser/test-results/
+browser/test-results-output.log
