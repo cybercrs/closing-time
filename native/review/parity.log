@@ -1,0 +1,22 @@
+✔ all adjusted accounts, statements, equations and formatted comparison rows equal Python (7.424627ms)
+✔ all 92 original answer/paired-account evaluations match independent Python outcomes (3.941765ms)
+✔ sixty original saved states retain every answer, draft, first-pass value, position and exact 63-bit seed (2492.31633ms)
+✔ ordinary native v4 links are accepted by unchanged Python without seed precision loss (353.541351ms)
+✔ all forty SHA-256/CPython shuffled account orders match, including seeds above Number safe range (94.23411ms)
+✔ a full perfect close reaches inline final mastery with all original 21 checkpoints (9.215523ms)
+✔ wrong simple and paired-account revisions preserve first pass and count every original practice check (8.778195ms)
+✔ statement resubmission counts only changed answers, with correct fields retaining their first-pass flags (8.234152ms)
+✔ every reached page is readonly, hidden future views clamp, and review never changes answers/attempts/scoring (24.410928ms)
+✔ draft bookmarks preserve selected revision values without submitting or advancing (39.093479ms)
+✔ practice beyond the legacy 99-attempt limit upgrades only overflow links and restores full score history (28.036448ms)
+✔ malformed indexes, future drafts, unknown accounts/options, wrong gates and invalid seeds are rejected (7.335605ms)
+✔ reset and independent instances retain copied completed bookmarks (80.821617ms)
+✔ all sixty teaching variants, feedback, case metadata and page titles contain no provisional branding (20.273079ms)
+ℹ tests 14
+ℹ suites 0
+ℹ pass 14
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 3999.260788

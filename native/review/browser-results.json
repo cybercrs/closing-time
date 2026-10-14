@@ -1,0 +1,71 @@
+{
+  "url": "http://127.0.0.1:36407/closing-time/js/",
+  "conditions": "Actual native Chromium at /closing-time/js/; external requests blocked.",
+  "completion_bookmark": "http://127.0.0.1:36407/closing-time/js/?progress=eJztV0tvGzcQ_isEUaCXPTiW7SjyKUBzKNAEQYKeF6PdWS1ritySXKlKkP_eIbnaJ6UmQBEgrU-29xvOfPMef-Yg-GaVcTB885kLZVsDqsDciKaR6L9hVWHh-Ia_N9iAKNmvZyFWYmEQLFr204vs5ubmcYS9-atBZZEJNZXhGdd7Ya3QinS-thadZaBKptB5Yb1HdtStLNkWmT6gsQ4clo8Mo0I7oK0qzzD_kvFWbYWUWKa4vy4K3Sqy9AELFAfYygmzVbb27D-iOQji_gEPqNqlRIp7xkyUzi56MeN5hB3aFMmPIMEIspaI3W12HxieRd7Dae5EEJlS_E0AxUQ4_8KzuxrDx39IQeCuzZOtdZOi_7tCMArLPnyj8niI5XElwA_L4hizT5ZEF_mvCzyxB-cJQ6yFzbLYb7MeXBTTiwGbJnAMzKNDWCGB_KlEAY68GowGawvQoUHrUg9tSyopEinsTDaFBbJJoCMbQW96Z4Q7bQpohAMpPlFcfMObGV6ihFPeqb0dI1UrZV5io61ws0eOfLYNGFQu34FQATZY6J0SgU33LI8ltICHXO21cnUYWWO8T5eNFbZQ0Co_u_IhGqEs9sRns6WeIs1lvm1dHkqIcudiggYp_LMNccvP9T7R0f-WV1IfCaRqK2iy3tOP6WSluv4FKzQG-3bkMVIx835UmXYCDqlPPR2S3z_t-oJ3syapdJT-Qev5IbEvA2143grPW-E_vhWKH7I_hWedmNX8nXaMFhI2LpTCFgtofdU45mPo3bbsLZzIxGSSf8O76Zz_hofLLeAdTzwUllUgXO0tncjrRpuu1MJUmi8L3tfJYk_wfr4sVwSPrKarIXwkQ9Yburga-Ftfj2rHtGG6daUvJgb7OE0KUEwiHMgl7WpmRUkR8PtDsmMtyFNXI6uEItWCvlmnzcm7bB0RZEej1Y5oLRYOfwNFzaD8o7XOrxpWA9nSShHqSyeIWVIOjj0hNgziGI2WnWZy1DmNbANCy5mPFlm3vvi7oW_8F0t_kAKDjrLmbVHgyXsac-QQkSLylFbHdOW9KZ5qLX2P_Xy24Nusaq4fXxVIi1cOMEcNcukGm2HzcRThy5dYZ_riNZZ8P3R9Eh7aPgl31ZbGhtaP-NXjbC4y6erOs0s32vztskGjxLVLbSmxaMKOxfWDbaln2pgR_4qzrbN25XSbq5qXv8f9iI3_GgvzPx210X3zPUcu3cvWPE_ef3Hykom-eQ58c5fxT3yzvlvd3b68X69frV6t7u5vHl6uv_wN_gl4Dg&view=19",
+  "cold_initialization_ms": {
+    "samples": [
+      353.70000000018626,
+      567.2000000001863,
+      601.2000000001863,
+      690.6999999997206,
+      479.5
+    ],
+    "median": 567.2000000001863,
+    "conditions": "Final icon-inclusive bundle; five cache-disabled fresh Chromium contexts on local loopback; no hosted/network speed or classroom capacity claim."
+  },
+  "checks": [
+    {
+      "name": "Original styling/title, required answer, draft review/refresh, readonly briefing and current-step Forward stop",
+      "status": "passed"
+    },
+    {
+      "name": "Full twenty-page close: wrong/repeated timing, classification, mixed account feedback, statement revisions and integrity mastery",
+      "status": "passed"
+    },
+    {
+      "name": "Original balance comparison CSV, keyboard table expansion, exact account permutations and first-pass/revision totals",
+      "status": "passed"
+    },
+    {
+      "name": "Every older page strictly readonly; no premature integrity debrief; keyboard/focus, repeated review, bookmarks and future rejection",
+      "status": "passed"
+    },
+    {
+      "name": "1280/900/390px layouts, 44px arrows, table scrolling, reset and independent contexts with old bookmarks retained",
+      "status": "passed"
+    },
+    {
+      "name": "All twenty legacy page bookmarks, exact 63-bit seeds, original/native tokens, extra query values and malformed links",
+      "status": "passed"
+    },
+    {
+      "name": "Second complete perfect close: 21/21 first pass, no revisions and final inline reset",
+      "status": "passed"
+    },
+    {
+      "name": "99-to-100 practice overflow, native-v5 recovery with full history, and reset to ordinary v4",
+      "status": "passed"
+    },
+    {
+      "name": "Five local cold initializations with no external requests, runtime/package loads, server traffic or browser errors",
+      "status": "passed"
+    },
+    {
+      "name": "Final title, original embedded tab icon and metadata-only runtime change; five fresh contexts",
+      "status": "passed"
+    }
+  ],
+  "requests": [
+    "/closing-time/js/",
+    "/closing-time/js/app.js",
+    "/closing-time/js/content.js",
+    "/closing-time/js/engine.js",
+    "/closing-time/js/original.css",
+    "/closing-time/js/shared.js",
+    "/closing-time/js/style.css"
+  ],
+  "external_requests": [],
+  "page_errors": [],
+  "console_errors": [],
+  "saved_link_compatibility": "Ordinary native/legacy v4 links interoperate. Only attempt-count overflow above 99 upgrades to native-only v5; old apps cannot restore v5."
+}

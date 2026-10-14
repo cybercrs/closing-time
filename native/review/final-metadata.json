@@ -1,0 +1,24 @@
+{
+  "app": "Closing Time",
+  "title": "Closing Time",
+  "icon": "\ud83d\udd54",
+  "svg_data_icon_decoded": true,
+  "changed_runtime_assets": [
+    "index.html"
+  ],
+  "asset_bytes": 154258,
+  "cold_initialization_ms": {
+    "samples": [
+      353.70000000018626,
+      567.2000000001863,
+      601.2000000001863,
+      690.6999999997206,
+      479.5
+    ],
+    "median": 567.2000000001863,
+    "conditions": "Final icon-inclusive bundle; five cache-disabled fresh Chromium contexts on local loopback; no hosted/network speed or classroom capacity claim."
+  },
+  "page_console_errors": [],
+  "external_requests": [],
+  "runtime_python_wasm_requests": []
+}

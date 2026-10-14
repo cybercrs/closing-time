@@ -1,0 +1,75 @@
+PASSED: Original styling/title, required answer, draft review/refresh, readonly briefing and current-step Forward stop
+PASSED: Full twenty-page close: wrong/repeated timing, classification, mixed account feedback, statement revisions and integrity mastery
+PASSED: Original balance comparison CSV, keyboard table expansion, exact account permutations and first-pass/revision totals
+PASSED: Every older page strictly readonly; no premature integrity debrief; keyboard/focus, repeated review, bookmarks and future rejection
+PASSED: 1280/900/390px layouts, 44px arrows, table scrolling, reset and independent contexts with old bookmarks retained
+PASSED: All twenty legacy page bookmarks, exact 63-bit seeds, original/native tokens, extra query values and malformed links
+PASSED: Second complete perfect close: 21/21 first pass, no revisions and final inline reset
+PASSED: 99-to-100 practice overflow, native-v5 recovery with full history, and reset to ordinary v4
+PASSED: Five local cold initializations with no external requests, runtime/package loads, server traffic or browser errors
+{
+  "url": "http://127.0.0.1:36407/closing-time/js/",
+  "conditions": "Actual native Chromium at /closing-time/js/; external requests blocked.",
+  "cold_initialization_ms": {
+    "samples": [
+      563.1000000000931,
+      575.3999999999069,
+      413.6999999997206,
+      1214.2000000001863,
+      549.4000000003725
+    ],
+    "median": 563.1000000000931,
+    "conditions": "Five cache-disabled fresh Chromium contexts on local loopback; not hosted loading or capacity measurements."
+  },
+  "checks": [
+    {
+      "name": "Original styling/title, required answer, draft review/refresh, readonly briefing and current-step Forward stop",
+      "status": "passed"
+    },
+    {
+      "name": "Full twenty-page close: wrong/repeated timing, classification, mixed account feedback, statement revisions and integrity mastery",
+      "status": "passed"
+    },
+    {
+      "name": "Original balance comparison CSV, keyboard table expansion, exact account permutations and first-pass/revision totals",
+      "status": "passed"
+    },
+    {
+      "name": "Every older page strictly readonly; no premature integrity debrief; keyboard/focus, repeated review, bookmarks and future rejection",
+      "status": "passed"
+    },
+    {
+      "name": "1280/900/390px layouts, 44px arrows, table scrolling, reset and independent contexts with old bookmarks retained",
+      "status": "passed"
+    },
+    {
+      "name": "All twenty legacy page bookmarks, exact 63-bit seeds, original/native tokens, extra query values and malformed links",
+      "status": "passed"
+    },
+    {
+      "name": "Second complete perfect close: 21/21 first pass, no revisions and final inline reset",
+      "status": "passed"
+    },
+    {
+      "name": "99-to-100 practice overflow, native-v5 recovery with full history, and reset to ordinary v4",
+      "status": "passed"
+    },
+    {
+      "name": "Five local cold initializations with no external requests, runtime/package loads, server traffic or browser errors",
+      "status": "passed"
+    }
+  ],
+  "requests": [
+    "/closing-time/js/",
+    "/closing-time/js/app.js",
+    "/closing-time/js/content.js",
+    "/closing-time/js/engine.js",
+    "/closing-time/js/original.css",
+    "/closing-time/js/shared.js",
+    "/closing-time/js/style.css"
+  ],
+  "external_requests": [],
+  "page_errors": [],
+  "console_errors": [],
+  "saved_link_compatibility": "Ordinary native/legacy v4 links interoperate. Only attempt-count overflow above 99 upgrades to native-only v5; old apps cannot restore v5."
+}
