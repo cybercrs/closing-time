@@ -1,0 +1,9 @@
+{
+  "repository": "cybercrs/closing-time",
+  "source_branch": "native/html-js",
+  "source_commit": "a5603db2ca213fbad92d5370bad4b433db7e454e",
+  "static_parent": "2e4ccac31bbc513cd9bc259daf0ce95ad4777adb",
+  "description": "Student-facing native HTML/CSS/JavaScript accounting activity",
+  "path": "/js/",
+  "hosted_browser_testing": "Not run; known proxy restriction respected"
+}

@@ -1,0 +1,36 @@
+{
+  "app": "Closing Time",
+  "description": "Student-facing native HTML/CSS/JavaScript accounting activity",
+  "path": "/js/",
+  "files": {
+    "index.html": {
+      "bytes": 2100,
+      "sha256": "a42cdfa495ab6a6b42bd9c1d985be5ffc7ec30470c450965bc521f59ec319559"
+    },
+    "app.js": {
+      "bytes": 12573,
+      "sha256": "9b4f405996b1329514ec172937c9d34d3119ada52c2e17afda256c947edd7fe4"
+    },
+    "engine.js": {
+      "bytes": 13790,
+      "sha256": "43492d84f235acc96f3ad2a0c5ee2d3d5b88392fb3d9940e386673d4868b38ac"
+    },
+    "content.js": {
+      "bytes": 108092,
+      "sha256": "87ac6f01cd6523e3f224d68cc38f690d7a4c3aa79465f644e89998a30113f0fd"
+    },
+    "style.css": {
+      "bytes": 4022,
+      "sha256": "efdf45fd421e0edf845e26161d1b8419ccf7c1e5358cf05407f9fafac624cfa5"
+    },
+    "original.css": {
+      "bytes": 7628,
+      "sha256": "e4404fe51630f2913fd56e9a5c8ea84250b4bfb5432d68b7c8076678a683f2dd"
+    },
+    "shared.js": {
+      "bytes": 6053,
+      "sha256": "44aae52b0b7d5d447f57b36fe54d95b406afcc4053b6510834a8b5d2458f0201"
+    }
+  },
+  "asset_bytes": 154258
+}
